@@ -1,11 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { NewPatientDialog } from "@/components/patients/new-patient-dialog";
 import { PatientList } from "@/components/patients/patient-list";
+import { StatsCards } from "@/components/patients/stats-cards";
 import type { Patient } from "@/lib/types";
 
 export default async function PatientsPage() {
   const supabase = await createClient();
-  const { data } = await supabase.from("patients").select("*").order("name", { ascending: true });
+  const [{ data }, { count: totalPlans }, { count: acceptedPlans }] = await Promise.all([
+    supabase.from("patients").select("*").order("name", { ascending: true }),
+    supabase.from("treatment_plans").select("*", { count: "exact", head: true }),
+    supabase.from("treatment_plans").select("*", { count: "exact", head: true }).not("accepted_at", "is", null),
+  ]);
   const patients = (data ?? []) as Patient[];
 
   return (
@@ -14,6 +19,8 @@ export default async function PatientsPage() {
         <h1 className="text-2xl font-medium">Patients</h1>
         <NewPatientDialog />
       </div>
+
+      <StatsCards totalPlans={totalPlans ?? 0} acceptedPlans={acceptedPlans ?? 0} />
 
       <PatientList patients={patients} />
     </div>
