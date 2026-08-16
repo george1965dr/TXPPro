@@ -4,6 +4,7 @@ export interface Patient {
   birth_date: string
   email?: string
   medical_history?: string
+  archived_at?: string | null
   created_at: string
   updated_at: string
 }
@@ -22,7 +23,9 @@ export interface TreatmentPlan {
   id: string
   patient_id: string
   total_fee: number
+  adjustment: number
   accepted_at?: string | null
+  archived_at?: string | null
   created_at: string
   updated_at: string
   patient?: Patient

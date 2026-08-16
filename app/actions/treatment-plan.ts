@@ -390,6 +390,56 @@ export async function removeKanbanItem(patientId: string, itemId: string) {
   revalidatePath(`/patients/${patientId}`);
 }
 
+/**
+ * Archives the current plan so a fresh one can start: erases every proposed-
+ * layer chart graphic its items drew (same erase logic removeKanbanItem uses,
+ * batched across the whole plan) but leaves the treatment_plan_items rows
+ * alone - they remain as the plan's historical record. Does not create a
+ * replacement plan; addProcedureToPlan/addKanbanProcedure already lazily
+ * create one the next time something is added with a null treatmentPlanId.
+ */
+export async function archiveActivePlan(patientId: string, treatmentPlanId: string) {
+  const supabase = await createClient();
+
+  const { data: items, error: itemsError } = await supabase
+    .from("treatment_plan_items")
+    .select("chart_key, surfaces")
+    .eq("treatment_plan_id", treatmentPlanId)
+    .not("chart_key", "is", null);
+  if (itemsError) throw new Error(itemsError.message);
+
+  const erasedBridges = new Set<string>();
+  for (const item of items ?? []) {
+    const chartKey = item.chart_key as string;
+    if (chartKey.startsWith("bridge-")) {
+      const bridgeId = bridgeIdFromChartKey(chartKey);
+      if (erasedBridges.has(bridgeId)) continue;
+      erasedBridges.add(bridgeId);
+      await removeBridge(patientId, bridgeId);
+    } else {
+      await eraseProposedGraphic(patientId, chartKey, (item.surfaces as string[] | null) ?? []);
+    }
+  }
+
+  const { error } = await supabase
+    .from("treatment_plans")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", treatmentPlanId)
+    .eq("patient_id", patientId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/patients/${patientId}`);
+}
+
+export async function updatePlanAdjustment(patientId: string, treatmentPlanId: string, adjustment: number) {
+  const supabase = await createClient();
+  const clamped = Number.isFinite(adjustment) ? Math.max(0, adjustment) : 0;
+  const { error } = await supabase.from("treatment_plans").update({ adjustment: clamped }).eq("id", treatmentPlanId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/patients/${patientId}`);
+  revalidatePath(`/patients/${patientId}/present`);
+}
+
 export async function setPlanAccepted(patientId: string, treatmentPlanId: string, accepted: boolean) {
   const supabase = await createClient();
   const { error } = await supabase

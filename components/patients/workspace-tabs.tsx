@@ -3,6 +3,18 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { useHeaderInfo } from "@/components/header-context";
 import { Odontogram } from "@/components/odontogram/odontogram";
 import {
@@ -15,11 +27,13 @@ import {
 } from "@/components/odontogram/chart-state";
 import { PerioGrid } from "@/components/perio/perio-grid";
 import { VisitBoard } from "@/components/treatment-plans/visit-board";
+import { PlanHistory } from "@/components/treatment-plans/plan-history";
 import { MediaGallery } from "@/components/media/media-gallery";
 import { toothsWithPhotos, type MediaItem } from "@/components/media/media-state";
 import {
   addKanbanProcedure,
   addProcedureToPlan,
+  archiveActivePlan,
   removeKanbanItem,
   scheduleItem,
   updatePlanItemFee,
@@ -40,6 +54,7 @@ import type {
   ToothCondition,
   ToothOverlay,
   ToothPerioStatus,
+  TreatmentPlan,
   TreatmentPlanItem,
 } from "@/lib/types";
 
@@ -63,6 +78,7 @@ interface WorkspaceTabsProps {
   treatmentPlanId: string | null;
   treatmentPlanItems: TreatmentPlanItem[];
   sequencedItems: SequencedTreatmentPlanItem[];
+  planHistory: TreatmentPlan[];
   mediaItems: MediaItem[];
 }
 
@@ -79,6 +95,7 @@ export function WorkspaceTabs({
   treatmentPlanId,
   treatmentPlanItems,
   sequencedItems,
+  planHistory,
   mediaItems,
 }: WorkspaceTabsProps) {
   const router = useRouter();
@@ -286,6 +303,21 @@ export function WorkspaceTabs({
     });
   }
 
+  function handleStartNewPlan() {
+    const currentPlanId = planIdRef.current;
+    if (!currentPlanId) return;
+
+    for (const item of boardItems) {
+      if (item.chartKey) stripChartGraphic(item.chartKey, item.surfaces);
+    }
+    setBoardItems([]);
+    setPlanId(null);
+
+    startBoardSave(async () => {
+      await archiveActivePlan(patientId, currentPlanId);
+    });
+  }
+
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange}>
       <TabsList>
@@ -314,17 +346,42 @@ export function WorkspaceTabs({
         />
       </TabsContent>
       <TabsContent value="sequence" className="pt-4">
-        <VisitBoard
-          patientId={patientId}
-          items={boardItems}
-          procedures={procedures}
-          isSaving={isSavingBoard}
-          onAddManual={handleAddManual}
-          onAddKanban={handleAddKanban}
-          onRemove={handleRemove}
-          onMove={handleMove}
-          onFeeChange={handleFeeChange}
-        />
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-end">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="outline" size="sm" disabled={!planId}>
+                  New plan
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Start a new plan?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The current plan&apos;s proposed treatment will be cleared from the chart and moved
+                    to plan history.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleStartNewPlan}>Start new plan</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          <VisitBoard
+            patientId={patientId}
+            items={boardItems}
+            procedures={procedures}
+            isSaving={isSavingBoard}
+            onAddManual={handleAddManual}
+            onAddKanban={handleAddKanban}
+            onRemove={handleRemove}
+            onMove={handleMove}
+            onFeeChange={handleFeeChange}
+          />
+          <PlanHistory plans={planHistory} />
+        </div>
       </TabsContent>
       <TabsContent value="media" className="pt-4">
         <MediaGallery patientId={patientId} initialItems={mediaItems} />

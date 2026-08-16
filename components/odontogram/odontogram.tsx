@@ -4,10 +4,19 @@ import { useMemo, useState, useTransition } from "react";
 import { createBridge, removeBridge, setToothCondition, setToothOverlay } from "@/app/actions/chart";
 import { CONDITIONS, type ConditionId } from "@/lib/dental/conditions";
 import { UPPER_ARCH, LOWER_ARCH, resolveBridgeRange } from "@/lib/dental/tooth-geometry";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { BridgeType, ChartLayer, OverlayType, ToothSurface } from "@/lib/types";
 import { ConditionPalette } from "./condition-palette";
 import { ToothSurfaceDiagram } from "./tooth-surface-diagram";
 import { buildToothToBridge, type BridgeInfo, type ChartState, type OverlayState } from "./chart-state";
+
+interface PendingBridge {
+  first: number;
+  last: number;
+  bridgeType: BridgeType;
+  pierAbutments: number[];
+}
 
 interface OdontogramProps {
   patientId: string;
@@ -34,6 +43,7 @@ export function Odontogram({
   photoTeeth,
 }: OdontogramProps) {
   const [bridgeFirstTooth, setBridgeFirstTooth] = useState<number | null>(null);
+  const [pendingBridge, setPendingBridge] = useState<PendingBridge | null>(null);
   // Doubles as the display filter: only this layer's data renders on the
   // arch below. Only "existing" is paintable - "proposed" is a read-only
   // picture of what's been authored on the kanban (see WorkspaceTabs).
@@ -44,10 +54,14 @@ export function Odontogram({
 
   const conditionDef = CONDITIONS.find((c) => c.id === condition)!;
   const toothToBridge = useMemo(() => buildToothToBridge(bridges, view), [bridges, view]);
+  const pendingBridgeInteriorTeeth = pendingBridge
+    ? Array.from({ length: pendingBridge.last - pendingBridge.first - 1 }, (_, i) => pendingBridge.first + 1 + i)
+    : [];
 
   function selectCondition(next: ConditionId) {
     setCondition(next);
     setBridgeFirstTooth(null);
+    setPendingBridge(null);
   }
 
   function eraseSurfaceOrWhole(toothNumber: number, target: ToothSurface | "whole") {
@@ -139,18 +153,50 @@ export function Odontogram({
   }
 
   function handleBridgeClick(toothNumber: number) {
-    const bridgeType: BridgeType = condition === "implant_bridge" ? "implant" : "tooth";
-
     if (bridgeFirstTooth === null) {
       setBridgeFirstTooth(toothNumber);
       return;
     }
 
-    const teeth = resolveBridgeRange(bridgeFirstTooth, toothNumber);
+    const span = resolveBridgeRange(bridgeFirstTooth, toothNumber);
     // Same tooth twice, or the second click landed in a different arch
     // (bridges can't span upper and lower) - start over from this click.
-    setBridgeFirstTooth(teeth ? null : toothNumber);
-    if (!teeth) return;
+    if (!span) {
+      setBridgeFirstTooth(toothNumber);
+      return;
+    }
+
+    setBridgeFirstTooth(null);
+    setPendingBridge({
+      first: Math.min(bridgeFirstTooth, toothNumber),
+      last: Math.max(bridgeFirstTooth, toothNumber),
+      bridgeType: condition === "implant_bridge" ? "implant" : "tooth",
+      pierAbutments: [],
+    });
+  }
+
+  function togglePierAbutment(toothNumber: number) {
+    setPendingBridge((prev) => {
+      if (!prev) return prev;
+      const has = prev.pierAbutments.includes(toothNumber);
+      return {
+        ...prev,
+        pierAbutments: has
+          ? prev.pierAbutments.filter((t) => t !== toothNumber)
+          : [...prev.pierAbutments, toothNumber],
+      };
+    });
+  }
+
+  function cancelPendingBridge() {
+    setPendingBridge(null);
+  }
+
+  function confirmPendingBridge() {
+    if (!pendingBridge) return;
+    const teeth = resolveBridgeRange(pendingBridge.first, pendingBridge.last, pendingBridge.pierAbutments)!;
+    const bridgeType = pendingBridge.bridgeType;
+    setPendingBridge(null);
 
     const tempId = `pending-bridge-${teeth[0].toothNumber}-${teeth[teeth.length - 1].toothNumber}`;
     onBridgesChange((prev) => [...prev, { id: tempId, layer: "existing", bridgeType, teeth }]);
@@ -191,7 +237,7 @@ export function Odontogram({
   }
 
   function handleToothNumberClick(toothNumber: number) {
-    if (!editable) return;
+    if (!editable || pendingBridge) return;
     if (conditionDef.target === "bridge") {
       handleBridgeClick(toothNumber);
       return;
@@ -200,7 +246,7 @@ export function Odontogram({
   }
 
   function handleSurfaceClick(toothNumber: number, surface: ToothSurface) {
-    if (!editable || conditionDef.target === "bridge") return; // bridges are whole-tooth only
+    if (!editable || pendingBridge || conditionDef.target === "bridge") return; // bridges are whole-tooth only
     applyTool(toothNumber, surface);
   }
 
@@ -251,7 +297,48 @@ export function Odontogram({
         onConditionChange={selectCondition}
       />
 
-      {editable && (
+      {editable && pendingBridge && (
+        <div className="flex flex-col gap-2 rounded-md border p-3">
+          <p className="text-sm font-medium">
+            Bridge #{pendingBridge.first}-#{pendingBridge.last}
+          </p>
+          {pendingBridgeInteriorTeeth.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xs text-muted-foreground">
+                Teeth in between are pontics by default - click any that are also abutments (a pier
+                abutment).
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {pendingBridgeInteriorTeeth.map((tooth) => (
+                  <button
+                    key={tooth}
+                    type="button"
+                    onClick={() => togglePierAbutment(tooth)}
+                    className={cn(
+                      "rounded-md border px-2.5 py-1 text-sm",
+                      pendingBridge.pierAbutments.includes(tooth)
+                        ? "border-foreground/40 bg-accent font-medium"
+                        : "border-border text-muted-foreground hover:bg-accent/50",
+                    )}
+                  >
+                    #{tooth}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <Button type="button" size="sm" onClick={confirmPendingBridge}>
+              Confirm bridge
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={cancelPendingBridge}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {editable && !pendingBridge && (
         <p className="text-xs text-muted-foreground">
           {condition === "erase"
             ? "Click a surface, tooth number, or finding badge to erase it"

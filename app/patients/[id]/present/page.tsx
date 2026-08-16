@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PresentActions } from "@/components/treatment-plans/present-actions";
+import { PresentTotals } from "@/components/treatment-plans/present-totals";
 import { buildPresentSummary, type PresentVisit } from "@/components/treatment-plans/present-state";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -51,13 +52,13 @@ export default async function PresentPlanPage({
   const typedPatient = patient as Patient | null;
   if (!typedPatient) notFound();
 
-  const { data: plans } = await supabase
+  const { data: planRow } = await supabase
     .from("treatment_plans")
     .select("*")
     .eq("patient_id", id)
-    .order("created_at", { ascending: false })
-    .limit(1);
-  const activePlan = ((plans as TreatmentPlan[] | null)?.[0] ?? null) as TreatmentPlan | null;
+    .is("archived_at", null)
+    .maybeSingle();
+  const activePlan = planRow as TreatmentPlan | null;
 
   let items: TreatmentPlanItem[] = [];
   let sequencedItems: SequencedTreatmentPlanItem[] = [];
@@ -125,10 +126,12 @@ export default async function PresentPlanPage({
                 ))}
                 <VisitSection visit={summary.unscheduled} />
 
-                <div className="flex items-center justify-between border-t pt-4">
-                  <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="text-xl font-medium">${summary.grandTotal.toLocaleString()}</p>
-                </div>
+                <PresentTotals
+                  patientId={id}
+                  treatmentPlanId={activePlan!.id}
+                  subtotal={summary.grandTotal}
+                  initialAdjustment={activePlan!.adjustment}
+                />
               </>
             );
           })()}

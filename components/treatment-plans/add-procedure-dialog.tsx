@@ -45,6 +45,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
   const [toothNumber, setToothNumber] = useState("");
   const [secondToothNumber, setSecondToothNumber] = useState("");
   const [surfaces, setSurfaces] = useState<ToothSurface[]>([]);
+  const [pierAbutments, setPierAbutments] = useState<number[]>([]);
 
   const sorted = useMemo(
     () => [...procedures].sort((a, b) => a.ada_code.localeCompare(b.ada_code)),
@@ -65,6 +66,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
     setToothNumber("");
     setSecondToothNumber("");
     setSurfaces([]);
+    setPierAbutments([]);
   }
 
   function pickProcedure(p: Procedure) {
@@ -79,6 +81,13 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
     setToothNumber("");
     setSecondToothNumber("");
     setSurfaces([]);
+    setPierAbutments([]);
+  }
+
+  function togglePierAbutment(toothNumber: number) {
+    setPierAbutments((prev) =>
+      prev.includes(toothNumber) ? prev.filter((t) => t !== toothNumber) : [...prev, toothNumber],
+    );
   }
 
   function toggleSurface(surface: ToothSurface) {
@@ -102,9 +111,18 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
           : `Pick ${entry.minSurfaces}–${entry.maxSurfaces} surfaces for this code.`
       : null;
 
+  const parsedSecondTooth = parseTooth(secondToothNumber);
+
+  const bridgeSpanPreview =
+    entry?.toothMode === "bridge" && parsedTooth !== null && parsedSecondTooth !== null
+      ? resolveBridgeRange(parsedTooth, parsedSecondTooth)
+      : null;
+  const bridgeInteriorTeeth = bridgeSpanPreview ? bridgeSpanPreview.slice(1, -1).map((t) => t.toothNumber) : [];
+  const activePierAbutments = pierAbutments.filter((t) => bridgeInteriorTeeth.includes(t));
+
   const bridgeTeeth =
     entry?.toothMode === "bridge" && parsedTooth !== null
-      ? resolveBridgeRange(parsedTooth, parseTooth(secondToothNumber) ?? -1)
+      ? resolveBridgeRange(parsedTooth, parsedSecondTooth ?? -1, activePierAbutments)
       : null;
 
   const canSubmit = !selected
@@ -244,6 +262,33 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
                   className="w-24"
                 />
                 {positionError && <p className="text-xs text-destructive">{positionError}</p>}
+              </div>
+            )}
+
+            {entry?.toothMode === "bridge" && bridgeInteriorTeeth.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Pier abutments (optional)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Teeth between the two ends are pontics by default - toggle any that are also
+                  abutments (e.g. a natural tooth or implant in the middle of the span).
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {bridgeInteriorTeeth.map((tooth) => (
+                    <button
+                      key={tooth}
+                      type="button"
+                      onClick={() => togglePierAbutment(tooth)}
+                      className={cn(
+                        "rounded-md border px-2.5 py-1 text-sm",
+                        activePierAbutments.includes(tooth)
+                          ? "border-foreground/40 bg-accent font-medium"
+                          : "border-border text-muted-foreground hover:bg-accent/50",
+                      )}
+                    >
+                      #{tooth}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 

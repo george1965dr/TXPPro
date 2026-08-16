@@ -47,3 +47,23 @@ export async function updateProcedure(procedureId: string, formData: FormData) {
 
   revalidatePath("/procedures");
 }
+
+export async function deleteProcedure(procedureId: string) {
+  const supabase = await createClient();
+
+  const { count, error: countError } = await supabase
+    .from("treatment_plan_items")
+    .select("id", { count: "exact", head: true })
+    .eq("procedure_id", procedureId);
+  if (countError) throw new Error(countError.message);
+  if (count && count > 0) {
+    throw new Error(
+      `This code is used on ${count} treatment plan item${count === 1 ? "" : "s"} and can't be deleted.`,
+    );
+  }
+
+  const { error } = await supabase.from("procedures").delete().eq("id", procedureId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/procedures");
+}

@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { WorkspaceTabs } from "@/components/patients/workspace-tabs";
 import { fromRow } from "@/components/media/media-state";
+import { EditPatientDialog } from "@/components/patients/edit-patient-dialog";
+import { ArchivePatientButton } from "@/components/patients/archive-patient-button";
+import { restorePatient } from "@/app/actions/patients";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import type {
@@ -38,7 +42,8 @@ export default async function PatientWorkspacePage({
     { data: procedures },
     { data: perioMeasurements },
     { data: perioStatuses },
-    { data: plans },
+    { data: activePlanRow },
+    { data: planHistoryRows },
     { data: media },
   ] = await Promise.all([
     supabase.from("patients").select("*").eq("id", id).single(),
@@ -48,12 +53,13 @@ export default async function PatientWorkspacePage({
     supabase.from("procedures").select("*"),
     supabase.from("periodontal_measurements").select("*").eq("patient_id", id),
     supabase.from("tooth_perio_status").select("*").eq("patient_id", id),
+    supabase.from("treatment_plans").select("*").eq("patient_id", id).is("archived_at", null).maybeSingle(),
     supabase
       .from("treatment_plans")
-      .select("*")
+      .select("*, treatment_plan_items(*, procedure:procedures(*))")
       .eq("patient_id", id)
-      .order("created_at", { ascending: false })
-      .limit(1),
+      .not("archived_at", "is", null)
+      .order("archived_at", { ascending: false }),
     supabase.from("patient_media").select("*").eq("patient_id", id).order("captured_at", { ascending: false }),
   ]);
 
@@ -75,7 +81,8 @@ export default async function PatientWorkspacePage({
     notFound();
   }
 
-  const activePlan = ((plans as TreatmentPlan[] | null)?.[0] ?? null) as TreatmentPlan | null;
+  const activePlan = activePlanRow as TreatmentPlan | null;
+  const planHistory = (planHistoryRows ?? []) as TreatmentPlan[];
 
   let treatmentPlanItems: TreatmentPlanItem[] = [];
   let sequencedItems: SequencedTreatmentPlanItem[] = [];
@@ -123,11 +130,26 @@ export default async function PatientWorkspacePage({
             Patients
           </Link>
         </Button>
-        <div>
-          <h1 className="text-xl font-medium">{typedPatient.name}</h1>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-medium">{typedPatient.name}</h1>
+            {typedPatient.archived_at && <Badge variant="secondary">Archived</Badge>}
+          </div>
           <p className="text-sm text-muted-foreground">
             Born {new Date(typedPatient.birth_date).toLocaleDateString()}
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <EditPatientDialog patient={typedPatient} />
+          {typedPatient.archived_at ? (
+            <form action={restorePatient.bind(null, typedPatient.id)}>
+              <Button type="submit" variant="secondary" size="sm">
+                Restore
+              </Button>
+            </form>
+          ) : (
+            <ArchivePatientButton patientId={typedPatient.id} patientName={typedPatient.name} />
+          )}
         </div>
       </div>
 
@@ -144,6 +166,7 @@ export default async function PatientWorkspacePage({
         treatmentPlanId={activePlan?.id ?? null}
         treatmentPlanItems={treatmentPlanItems}
         sequencedItems={sequencedItems}
+        planHistory={planHistory}
         mediaItems={mediaItems}
       />
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Settings } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useHeaderInfo } from "@/components/header-context";
 
@@ -22,11 +23,18 @@ export function AppHeader() {
               <span className="text-muted-foreground">{info.tabLabel}</span>
             </div>
           )}
-          <Link href="/procedures" className="text-sm text-muted-foreground hover:text-foreground">
-            Procedures
-          </Link>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <Link
+            href="/procedures"
+            aria-label="Manage procedure codes"
+            title="Manage procedure codes"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <Settings className="size-4" />
+          </Link>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

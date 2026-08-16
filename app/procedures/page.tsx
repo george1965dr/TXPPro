@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProcedureDialog } from "@/components/procedures/procedure-dialog";
+import { DeleteProcedureButton } from "@/components/procedures/delete-procedure-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pencil } from "lucide-react";
@@ -43,14 +44,17 @@ export default async function ProceduresPage() {
                     {procedure.tooth_required ? " · tooth required" : ""}
                   </p>
                 </div>
-                <ProcedureDialog
-                  procedure={procedure}
-                  trigger={
-                    <Button variant="outline" size="icon" aria-label={`Edit ${procedure.ada_code}`}>
-                      <Pencil className="size-4" />
-                    </Button>
-                  }
-                />
+                <div className="flex items-center gap-2">
+                  <ProcedureDialog
+                    procedure={procedure}
+                    trigger={
+                      <Button variant="outline" size="icon" aria-label={`Edit ${procedure.ada_code}`}>
+                        <Pencil className="size-4" />
+                      </Button>
+                    }
+                  />
+                  <DeleteProcedureButton procedureId={procedure.id} adaCode={procedure.ada_code} />
+                </div>
               </CardContent>
             </Card>
           ))}
