@@ -9,6 +9,12 @@ export interface Patient {
   updated_at: string
 }
 
+export interface PracticeSettings {
+  id: number
+  name: string
+  updated_at: string
+}
+
 export interface Procedure {
   id: string
   ada_code: string

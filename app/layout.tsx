@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppHeader } from "@/components/app-header";
 import { HeaderProvider } from "@/components/header-context";
+import { createClient } from "@/lib/supabase/server";
+import type { PracticeSettings } from "@/lib/types";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,7 +23,11 @@ export const metadata: Metadata = {
   description: "Chart, plan, and sequence complex treatment cases.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const supabase = await createClient();
+  const { data } = await supabase.from("practice_settings").select("*").eq("id", 1).maybeSingle();
+  const practiceSettings = data as PracticeSettings | null;
+
   return (
     <html
       lang="en"
@@ -32,7 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
             <HeaderProvider>
-              <AppHeader />
+              <AppHeader initialPracticeName={practiceSettings?.name ?? ""} />
               {children}
             </HeaderProvider>
           </TooltipProvider>
