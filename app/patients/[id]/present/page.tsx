@@ -6,7 +6,13 @@ import { PresentTotals } from "@/components/treatment-plans/present-totals";
 import { buildPresentSummary, type PresentVisit } from "@/components/treatment-plans/present-state";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import type { Patient, SequencedTreatmentPlanItem, TreatmentPlan, TreatmentPlanItem } from "@/lib/types";
+import type {
+  Patient,
+  PracticeSettings,
+  SequencedTreatmentPlanItem,
+  TreatmentPlan,
+  TreatmentPlanItem,
+} from "@/lib/types";
 
 function VisitSection({ visit }: { visit: PresentVisit }) {
   if (visit.items.length === 0) return null;
@@ -52,6 +58,9 @@ export default async function PresentPlanPage({
   const typedPatient = patient as Patient | null;
   if (!typedPatient) notFound();
 
+  const { data: settingsRow } = await supabase.from("practice_settings").select("*").eq("id", 1).maybeSingle();
+  const practiceSettings = settingsRow as PracticeSettings | null;
+
   const { data: planRow } = await supabase
     .from("treatment_plans")
     .select("*")
@@ -83,6 +92,15 @@ export default async function PresentPlanPage({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
+      {(practiceSettings?.name || practiceSettings?.address) && (
+        <div className="border-b pb-4">
+          {practiceSettings.name && <p className="text-lg font-semibold">{practiceSettings.name}</p>}
+          {practiceSettings.address && (
+            <p className="whitespace-pre-line text-sm text-muted-foreground">{practiceSettings.address}</p>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between print:hidden">
         <Button variant="outline" size="sm" asChild>
           <Link href={backHref}>
@@ -132,6 +150,13 @@ export default async function PresentPlanPage({
                   subtotal={summary.grandTotal}
                   initialAdjustment={activePlan!.adjustment}
                 />
+
+                <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                  <div className="h-10 border-b border-foreground/40" />
+                  <div className="h-10 border-b border-foreground/40" />
+                  <p className="text-muted-foreground">Patient signature</p>
+                  <p className="text-muted-foreground">Date</p>
+                </div>
               </>
             );
           })()}

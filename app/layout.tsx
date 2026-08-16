@@ -38,7 +38,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
             <HeaderProvider>
-              <AppHeader initialPracticeName={practiceSettings?.name ?? ""} />
+              <AppHeader
+                initialPracticeName={practiceSettings?.name ?? ""}
+                initialPracticeAddress={practiceSettings?.address ?? ""}
+              />
               {children}
             </HeaderProvider>
           </TooltipProvider>

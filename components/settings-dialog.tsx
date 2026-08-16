@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Settings } from "lucide-react";
-import { updatePracticeName } from "@/app/actions/settings";
+import { updatePracticeSettings } from "@/app/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -15,12 +16,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function SettingsDialog({ initialPracticeName }: { initialPracticeName: string }) {
+interface SettingsDialogProps {
+  initialPracticeName: string;
+  initialPracticeAddress: string;
+}
+
+export function SettingsDialog({ initialPracticeName, initialPracticeAddress }: SettingsDialogProps) {
   const [open, setOpen] = useState(false);
 
   async function action(formData: FormData) {
     const name = formData.get("name");
-    await updatePracticeName(typeof name === "string" ? name : "");
+    const address = formData.get("address");
+    await updatePracticeSettings(
+      typeof name === "string" ? name : "",
+      typeof address === "string" ? address : "",
+    );
     setOpen(false);
   }
 
@@ -51,6 +61,19 @@ export function SettingsDialog({ initialPracticeName }: { initialPracticeName: s
             />
             <p className="text-xs text-muted-foreground">
               Shown in the sticky header. Leave blank to just show &quot;TXP Pro&quot;.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="address">Practice address</Label>
+            <Textarea
+              id="address"
+              name="address"
+              defaultValue={initialPracticeAddress}
+              placeholder={"123 Main St, Suite 100\nAnytown, ST 12345"}
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              Printed on the treatment plan letterhead.
             </p>
           </div>
           <Button type="submit">Save</Button>

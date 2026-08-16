@@ -5,11 +5,16 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { useHeaderInfo } from "@/components/header-context";
 
-export function AppHeader({ initialPracticeName }: { initialPracticeName: string }) {
+interface AppHeaderProps {
+  initialPracticeName: string;
+  initialPracticeAddress: string;
+}
+
+export function AppHeader({ initialPracticeName, initialPracticeAddress }: AppHeaderProps) {
   const { info } = useHeaderInfo();
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+    <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 print:hidden">
       <div className="mx-auto flex h-14 w-full max-w-4xl items-center justify-between px-8">
         <div className="flex items-center gap-6">
           <Link href="/patients" className="flex items-baseline gap-2">
@@ -34,7 +39,10 @@ export function AppHeader({ initialPracticeName }: { initialPracticeName: string
           )}
         </div>
         <div className="flex items-center gap-1">
-          <SettingsDialog initialPracticeName={initialPracticeName} />
+          <SettingsDialog
+            initialPracticeName={initialPracticeName}
+            initialPracticeAddress={initialPracticeAddress}
+          />
           <ThemeToggle />
         </div>
       </div>

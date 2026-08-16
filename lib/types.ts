@@ -12,6 +12,7 @@ export interface Patient {
 export interface PracticeSettings {
   id: number
   name: string
+  address: string
   updated_at: string
 }
 

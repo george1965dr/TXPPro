@@ -128,3 +128,30 @@
     @apply font-sans;
   }
 }
+
+/*
+ * Printed output must be readable regardless of which theme was active on
+ * screen - a dark-mode printout would put near-white text on white paper.
+ * Force the light-theme tokens for print so this never depends on the
+ * viewer's current theme.
+ */
+@media print {
+  :root,
+  .dark {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.35 0 0);
+    --border: oklch(0.85 0 0);
+  }
+
+  @page {
+    margin: 0.6in;
+  }
+
+  body {
+    background: white !important;
+  }
+}
