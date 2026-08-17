@@ -21,10 +21,12 @@ export function AppHeader({ initialPracticeName, initialPracticeAddress }: AppHe
             {initialPracticeName ? (
               <>
                 <span className="text-sm font-medium tracking-tight">{initialPracticeName}</span>
-                <span className="text-xs text-muted-foreground">TXP Pro</span>
+                <span className="text-base font-medium text-muted-foreground">
+                  TXP <span className="text-primary">Pro</span>
+                </span>
               </>
             ) : (
-              <span className="text-sm font-medium tracking-tight">
+              <span className="text-xl font-semibold tracking-tight">
                 TXP <span className="text-primary">Pro</span>
               </span>
             )}
