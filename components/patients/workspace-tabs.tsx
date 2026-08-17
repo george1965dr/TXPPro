@@ -141,7 +141,7 @@ export function WorkspaceTabs({
 
   const [isSavingBoard, startBoardSave] = useTransition();
   const [showExistingChart, setShowExistingChart] = useState(true);
-  const [showProposedChart, setShowProposedChart] = useState(true);
+  const [showProposedChart, setShowProposedChart] = useState(false);
 
   // Read via ref inside async callbacks so they can stay referentially
   // stable instead of re-subscribing every time planId resolves.
@@ -356,6 +356,31 @@ export function WorkspaceTabs({
         <div className="flex flex-col gap-4">
           <Card>
             <CardHeader>
+              <CardTitle>Proposed treatment</CardTitle>
+              <CardAction>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowProposedChart((v) => !v)}
+                >
+                  {showProposedChart ? "Hide" : "Show"}
+                </Button>
+              </CardAction>
+            </CardHeader>
+            {showProposedChart && (
+              <CardContent>
+                <ReadOnlyOdontogram
+                  view="proposed"
+                  chartState={chartState}
+                  overlayState={overlayState}
+                  bridges={chartBridges}
+                />
+              </CardContent>
+            )}
+          </Card>
+          <Card>
+            <CardHeader>
               <CardTitle>Existing conditions</CardTitle>
               <CardAction>
                 <Button
@@ -377,31 +402,6 @@ export function WorkspaceTabs({
                   bridges={chartBridges}
                 />
                 <ChartNotes patientId={patientId} initialNotes={chartNotes} />
-              </CardContent>
-            )}
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Proposed treatment</CardTitle>
-              <CardAction>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowProposedChart((v) => !v)}
-                >
-                  {showProposedChart ? "Hide" : "Show"}
-                </Button>
-              </CardAction>
-            </CardHeader>
-            {showProposedChart && (
-              <CardContent>
-                <ReadOnlyOdontogram
-                  view="proposed"
-                  chartState={chartState}
-                  overlayState={overlayState}
-                  bridges={chartBridges}
-                />
               </CardContent>
             )}
           </Card>
