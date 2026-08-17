@@ -32,7 +32,7 @@ import { PerioGrid } from "@/components/perio/perio-grid";
 import { VisitBoard } from "@/components/treatment-plans/visit-board";
 import { PlanHistory } from "@/components/treatment-plans/plan-history";
 import { MediaGallery } from "@/components/media/media-gallery";
-import { toothsWithPhotos, type MediaItem } from "@/components/media/media-state";
+import type { MediaItem } from "@/components/media/media-state";
 import {
   addKanbanProcedure,
   addProcedureToPlan,
@@ -342,7 +342,6 @@ export function WorkspaceTabs({
           onChartStateChange={setChartState}
           onOverlayStateChange={setOverlayState}
           onBridgesChange={setChartBridges}
-          photoTeeth={toothsWithPhotos(mediaItems)}
         />
       </TabsContent>
       <TabsContent value="perio" className="pt-4">

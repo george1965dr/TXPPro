@@ -4,7 +4,6 @@ import type { MediaType, PatientMedia } from "@/lib/types";
 export interface MediaItem {
   id: string;
   type: MediaType;
-  toothNumber: number | null;
   capturedAt: string;
   durationSeconds: number | null;
   storagePath: string;
@@ -15,7 +14,6 @@ export function fromRow(row: PatientMedia, url: string | null): MediaItem {
   return {
     id: row.id,
     type: row.type,
-    toothNumber: row.tooth_number,
     capturedAt: row.captured_at,
     durationSeconds: row.duration_seconds,
     storagePath: row.storage_path,
@@ -43,14 +41,6 @@ export function groupByDate(items: MediaItem[]): MediaGroup[] {
   return order.map((date) => ({ date, items: map.get(date)! }));
 }
 
-export function toothsWithPhotos(items: MediaItem[]): Set<number> {
-  const set = new Set<number>();
-  for (const item of items) {
-    if (item.type === "photo" && item.toothNumber !== null) set.add(item.toothNumber);
-  }
-  return set;
-}
-
 export function newMediaItem(
   id: string,
   type: MediaType,
@@ -61,7 +51,6 @@ export function newMediaItem(
   return {
     id,
     type,
-    toothNumber: null,
     capturedAt: todayDateString(),
     durationSeconds,
     storagePath,

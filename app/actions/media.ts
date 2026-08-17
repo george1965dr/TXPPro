@@ -13,7 +13,6 @@ export async function addPatientMedia(
   patientId: string,
   type: MediaType,
   storagePath: string,
-  toothNumber: number | null,
   durationSeconds: number | null,
 ) {
   const supabase = await createClient();
@@ -23,7 +22,6 @@ export async function addPatientMedia(
       patient_id: patientId,
       type,
       storage_path: storagePath,
-      tooth_number: toothNumber,
       duration_seconds: durationSeconds,
     })
     .select("*")
@@ -32,17 +30,6 @@ export async function addPatientMedia(
   if (error) throw new Error(error.message);
   revalidatePath(`/patients/${patientId}`);
   return data as PatientMedia;
-}
-
-export async function updateMediaTooth(patientId: string, mediaId: string, toothNumber: number | null) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("patient_media")
-    .update({ tooth_number: toothNumber })
-    .eq("id", mediaId);
-
-  if (error) throw new Error(error.message);
-  revalidatePath(`/patients/${patientId}`);
 }
 
 export async function deletePatientMedia(patientId: string, mediaId: string, storagePath: string) {

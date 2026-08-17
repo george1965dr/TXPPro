@@ -1,6 +1,5 @@
 "use client";
 
-import { Camera } from "lucide-react";
 import {
   SURFACE_ORDER,
   SURFACE_ZONE_POINTS,
@@ -21,7 +20,6 @@ interface ToothSurfaceDiagramProps {
   whole?: string;
   overlays?: Partial<Record<OverlayType, true>>;
   bridge?: BridgeMembership;
-  hasPhoto?: boolean;
   /** Rendered pixel size of the square diagram (viewBox stays 44x44, so this just scales it). */
   size?: number;
   /** Existing restoration + a caries signal on the same tooth - framed in a bright outline so it isn't missed. */
@@ -99,7 +97,6 @@ export function ToothSurfaceDiagram({
   whole,
   overlays,
   bridge,
-  hasPhoto,
   size = 40,
   alert,
   onSurfaceClick,
@@ -115,14 +112,6 @@ export function ToothSurfaceDiagram({
 
   return (
     <div className="relative flex flex-col items-center gap-0.5">
-      {hasPhoto && (
-        <span
-          aria-label="Has photo"
-          className="absolute -top-0.5 right-1 flex size-3.5 items-center justify-center rounded-full bg-primary"
-        >
-          <Camera className="size-2.5 text-primary-foreground" />
-        </span>
-      )}
       <svg viewBox="0 0 44 44" width={size} height={size}>
         {bridge ? (
           <>

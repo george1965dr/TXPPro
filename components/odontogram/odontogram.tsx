@@ -34,8 +34,6 @@ interface OdontogramProps {
   onChartStateChange: (updater: (prev: ChartState) => ChartState) => void;
   onOverlayStateChange: (updater: (prev: OverlayState) => OverlayState) => void;
   onBridgesChange: (updater: (prev: BridgeInfo[]) => BridgeInfo[]) => void;
-  /** Teeth with at least one tagged photo, as of last page load - shows a small camera badge. */
-  photoTeeth?: Set<number>;
 }
 
 export function Odontogram({
@@ -46,7 +44,6 @@ export function Odontogram({
   onChartStateChange,
   onOverlayStateChange,
   onBridgesChange,
-  photoTeeth,
 }: OdontogramProps) {
   const [bridgeFirstTooth, setBridgeFirstTooth] = useState<number | null>(null);
   const [pendingBridge, setPendingBridge] = useState<PendingBridge | null>(null);
@@ -278,7 +275,6 @@ export function Odontogram({
         overlays={display.overlays}
         bridge={display.bridge}
         alert={display.alert}
-        hasPhoto={photoTeeth?.has(toothNumber)}
         onSurfaceClick={(surface) => handleSurfaceClick(toothNumber, surface)}
         onWholeClick={() => handleToothNumberClick(toothNumber)}
         onOverlayClick={(overlay) => handleOverlayClick(toothNumber, overlay)}

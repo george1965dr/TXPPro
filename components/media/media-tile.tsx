@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/dental/media";
 import type { MediaItem } from "./media-state";
@@ -12,13 +12,6 @@ interface MediaTileProps {
 }
 
 export function MediaTile({ item, selected, onSelect }: MediaTileProps) {
-  const caption =
-    item.type === "video"
-      ? `Whole mouth${item.durationSeconds !== null ? ` · ${formatDuration(item.durationSeconds)}` : ""}`
-      : item.toothNumber !== null
-        ? `#${item.toothNumber}`
-        : "Full arch";
-
   return (
     <button
       type="button"
@@ -34,13 +27,15 @@ export function MediaTile({ item, selected, onSelect }: MediaTileProps) {
         {item.type === "photo" && item.url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.url} alt="" className="size-full object-cover" />
-        ) : item.type === "video" ? (
-          <Video className="size-6 text-muted-foreground" />
         ) : (
-          <Camera className="size-6 text-muted-foreground" />
+          <Video className="size-6 text-muted-foreground" />
         )}
       </div>
-      <span className="text-[11px] text-muted-foreground">{caption}</span>
+      {item.type === "video" && (
+        <span className="text-[11px] text-muted-foreground">
+          {item.durationSeconds !== null ? formatDuration(item.durationSeconds) : "Video"}
+        </span>
+      )}
     </button>
   );
 }
