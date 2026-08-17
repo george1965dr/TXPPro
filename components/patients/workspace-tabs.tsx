@@ -137,6 +137,7 @@ export function WorkspaceTabs({
   const [chartBridges, setChartBridges] = useState<BridgeInfo[]>(() => buildBridgeInfos(bridges, bridgeTeeth));
 
   const [isSavingBoard, startBoardSave] = useTransition();
+  const [showExistingChart, setShowExistingChart] = useState(true);
   const [showProposedChart, setShowProposedChart] = useState(true);
 
   // Read via ref inside async callbacks so they can stay referentially
@@ -350,6 +351,31 @@ export function WorkspaceTabs({
       </TabsContent>
       <TabsContent value="sequence" className="pt-4">
         <div className="flex flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Existing conditions</CardTitle>
+              <CardAction>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowExistingChart((v) => !v)}
+                >
+                  {showExistingChart ? "Hide" : "Show"}
+                </Button>
+              </CardAction>
+            </CardHeader>
+            {showExistingChart && (
+              <CardContent>
+                <ReadOnlyOdontogram
+                  view="existing"
+                  chartState={chartState}
+                  overlayState={overlayState}
+                  bridges={chartBridges}
+                />
+              </CardContent>
+            )}
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle>Proposed treatment</CardTitle>
