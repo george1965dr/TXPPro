@@ -121,3 +121,16 @@ export function surfaceComboLabel(surfaces: ToothSurface[], toothNumber: number)
 
   return parts.join("");
 }
+
+/**
+ * Parses a treatment_plan_items.tooth_numbers[0] value into a display-ready
+ * tooth number, returning null (not NaN) for anything that isn't a clean
+ * integer - including the literal string "undefined", which older, now-fixed
+ * write paths could persist for tooth-anchored items whose toothNumber
+ * wasn't set at insert time.
+ */
+export function parseToothNumber(raw: string | null | undefined): number | null {
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}

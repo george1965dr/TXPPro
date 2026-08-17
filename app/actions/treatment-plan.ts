@@ -14,6 +14,7 @@ import {
   adaCodeForWholeTooth,
 } from "@/lib/dental/procedure-mapping";
 import {
+  parseToothNumber,
   SURFACE_BY_ABBREVIATION,
   surfaceComboLabel,
   toothPosition,
@@ -306,7 +307,7 @@ export async function addKanbanProcedure(
       adaCode: procedure.ada_code,
       description: procedure.description,
       fee: row.fee,
-      toothNumber: row.tooth_numbers?.[0] ? Number(row.tooth_numbers[0]) : null,
+      toothNumber: parseToothNumber(row.tooth_numbers?.[0]),
       surfaces: row.surfaces ?? [],
       chartKey: row.chart_key as string,
     };

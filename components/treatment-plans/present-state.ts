@@ -1,3 +1,4 @@
+import { parseToothNumber } from "@/lib/dental/tooth-geometry";
 import type { SequencedTreatmentPlanItem, TreatmentPlanItem } from "@/lib/types";
 
 export interface PresentLineItem {
@@ -28,7 +29,7 @@ function toLineItem(item: TreatmentPlanItem): PresentLineItem | null {
     adaCode: item.procedure.ada_code,
     description: item.procedure.description,
     fee: item.fee,
-    toothNumber: item.tooth_numbers?.[0] ? Number(item.tooth_numbers[0]) : null,
+    toothNumber: parseToothNumber(item.tooth_numbers?.[0]),
     surfaces: item.surfaces ?? [],
   };
 }

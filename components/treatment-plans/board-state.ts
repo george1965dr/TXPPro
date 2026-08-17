@@ -1,3 +1,4 @@
+import { parseToothNumber } from "@/lib/dental/tooth-geometry";
 import type { SequencedTreatmentPlanItem, TreatmentPlanItem } from "@/lib/types";
 
 export interface BoardItem {
@@ -34,7 +35,7 @@ export function buildBoardItems(
       fee: item.fee,
       appointmentNumber: appointmentByItemId.get(item.id) ?? null,
       chartKey: item.chart_key ?? null,
-      toothNumber: item.tooth_numbers?.[0] ? Number(item.tooth_numbers[0]) : null,
+      toothNumber: parseToothNumber(item.tooth_numbers?.[0]),
       surfaces: item.surfaces ?? [],
     }));
 }
