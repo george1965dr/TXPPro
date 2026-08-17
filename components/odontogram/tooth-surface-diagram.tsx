@@ -48,6 +48,13 @@ const VIEW_COLOR = {
 
 const EMPTY_COLOR = { fill: "var(--muted)", stroke: "var(--border)", text: "var(--muted-foreground)" };
 
+/** Swapped in for the restoration's own color (not the overlay badges) when `alert` is set. */
+const ALERT_COLOR = {
+  fill: "color-mix(in oklch, var(--destructive) 15%, var(--background))",
+  stroke: "var(--destructive)",
+  text: "var(--destructive)",
+};
+
 const CONDITION_LETTER: Record<string, string> = {
   caries: "c",
   filling: "f",
@@ -100,6 +107,10 @@ export function ToothSurfaceDiagram({
   onOverlayClick,
 }: ToothSurfaceDiagramProps) {
   const color = VIEW_COLOR[view];
+  // The restoration's own outline turns red when alerted, instead of an
+  // extra ring on top of it - one crisp line instead of two overlapping
+  // ones. Badges and the "#N" label keep the normal view color.
+  const restorationColor = alert ? ALERT_COLOR : color;
   const overlayTypes = Object.keys(overlays ?? {}) as OverlayType[];
 
   return (
@@ -121,8 +132,8 @@ export function ToothSurfaceDiagram({
               width={44}
               height={44}
               rx={5}
-              fill={bridge.role === "pontic" ? "transparent" : color.fill}
-              stroke={color.stroke}
+              fill={bridge.role === "pontic" ? "transparent" : restorationColor.fill}
+              stroke={restorationColor.stroke}
               strokeDasharray={bridge.role === "pontic" ? "3,3" : undefined}
               onClick={onWholeClick}
               className="cursor-pointer"
@@ -132,7 +143,7 @@ export function ToothSurfaceDiagram({
               y={26}
               textAnchor="middle"
               fontSize={9}
-              fill={color.text}
+              fill={restorationColor.text}
               style={{ pointerEvents: "none" }}
             >
               {bridge.role === "abutment" ? "AB" : "PO"}
@@ -146,8 +157,8 @@ export function ToothSurfaceDiagram({
               width={44}
               height={44}
               rx={5}
-              fill={EMPTY_WHOLE_VALUES.has(whole) ? "transparent" : color.fill}
-              stroke={color.stroke}
+              fill={EMPTY_WHOLE_VALUES.has(whole) ? "transparent" : restorationColor.fill}
+              stroke={restorationColor.stroke}
               strokeDasharray={EMPTY_WHOLE_VALUES.has(whole) ? "3,3" : undefined}
               onClick={onWholeClick}
               className="cursor-pointer"
@@ -157,7 +168,7 @@ export function ToothSurfaceDiagram({
               y={26}
               textAnchor="middle"
               fontSize={11}
-              fill={color.text}
+              fill={restorationColor.text}
               style={{ pointerEvents: "none" }}
             >
               {WHOLE_LABEL[whole] ?? "?"}
@@ -166,7 +177,7 @@ export function ToothSurfaceDiagram({
         ) : (
           SURFACE_ORDER.map((surface) => {
             const entry = surfaces[surface];
-            const zoneColor = entry ? color : EMPTY_COLOR;
+            const zoneColor = entry ? restorationColor : EMPTY_COLOR;
             const labelPos = SURFACE_LABEL_POSITION[surface];
             return (
               <g key={surface}>
@@ -194,25 +205,12 @@ export function ToothSurfaceDiagram({
             );
           })
         )}
-        {alert && (
-          <rect
-            x={1.5}
-            y={1.5}
-            width={41}
-            height={41}
-            rx={5}
-            fill="none"
-            stroke="var(--destructive)"
-            strokeWidth={1.5}
-            style={{ pointerEvents: "none" }}
-          />
-        )}
       </svg>
 
       {bridge && (
         <div
           className="h-1 rounded-full"
-          style={{ background: color.stroke, width: size - 4 }}
+          style={{ background: restorationColor.stroke, width: size - 4 }}
           aria-hidden="true"
         />
       )}
