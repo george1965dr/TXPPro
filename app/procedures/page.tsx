@@ -15,7 +15,7 @@ export default async function ProceduresPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-medium">Procedures</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Procedures</h1>
           <p className="text-sm text-muted-foreground">
             The fee schedule the odontogram and treatment plans price against.
           </p>
@@ -35,13 +35,15 @@ export default async function ProceduresPage() {
             <Card key={procedure.id}>
               <CardContent className="flex items-center justify-between py-3">
                 <div>
-                  <p className="font-medium">
+                  <p className="font-semibold">
                     {procedure.ada_code}
                     <span className="ml-2 font-normal text-muted-foreground">{procedure.description}</span>
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    ${procedure.fee.toLocaleString()}
-                    {procedure.tooth_required ? " · tooth required" : ""}
+                  <p className="text-sm">
+                    <span className="font-semibold text-primary">${procedure.fee.toLocaleString()}</span>
+                    <span className="text-muted-foreground">
+                      {procedure.tooth_required ? " · tooth required" : ""}
+                    </span>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

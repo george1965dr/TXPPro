@@ -67,8 +67,8 @@ export function PresentTotals({ patientId, treatmentPlanId, subtotal, initialAdj
         )}
       </div>
       <div className="flex items-center justify-between pt-1">
-        <p className="text-sm font-medium">Total</p>
-        <p className="text-xl font-medium">${Math.max(0, subtotal - adjustment).toLocaleString()}</p>
+        <p className="text-base font-semibold">Total</p>
+        <p className="text-2xl font-bold">${Math.max(0, subtotal - adjustment).toLocaleString()}</p>
       </div>
     </div>
   );

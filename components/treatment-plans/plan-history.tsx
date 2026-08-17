@@ -33,7 +33,10 @@ function PlanRow({ plan }: { plan: TreatmentPlan }) {
           <span>
             {items.length} item{items.length === 1 ? "" : "s"} · ${total.toFixed(2)}
           </span>
-          <Badge variant={plan.accepted_at ? "default" : "outline"}>
+          <Badge
+            variant={plan.accepted_at ? "default" : "outline"}
+            className={plan.accepted_at ? "bg-green-600 text-white dark:bg-green-500" : undefined}
+          >
             {plan.accepted_at ? "Accepted" : "Not accepted"}
           </Badge>
         </span>

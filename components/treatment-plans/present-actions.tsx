@@ -33,6 +33,7 @@ export function PresentActions({ patientId, treatmentPlanId, accepted }: Present
       ) : (
         <Button
           size="sm"
+          className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
           disabled={isPending}
           onClick={() => startTransition(() => setPlanAccepted(patientId, treatmentPlanId, true))}
         >

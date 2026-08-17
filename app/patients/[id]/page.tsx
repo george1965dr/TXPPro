@@ -132,7 +132,7 @@ export default async function PatientWorkspacePage({
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-medium">{typedPatient.name}</h1>
+            <h1 className="text-xl font-semibold tracking-tight">{typedPatient.name}</h1>
             {typedPatient.archived_at && <Badge variant="secondary">Archived</Badge>}
           </div>
           <p className="text-sm text-muted-foreground">

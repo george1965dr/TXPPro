@@ -63,7 +63,7 @@ export function PatientList({ patients }: { patients: Patient[] }) {
                 <CardContent className="flex items-center justify-between py-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">{patient.name}</p>
+                      <p className="font-semibold">{patient.name}</p>
                       <Badge variant="secondary">Archived</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">

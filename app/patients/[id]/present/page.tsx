@@ -118,7 +118,7 @@ export default async function PresentPlanPage({
       </div>
 
       <div>
-        <h1 className="text-2xl font-medium">Treatment plan</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Treatment plan</h1>
         <p className="text-sm text-muted-foreground">
           {typedPatient.name} · {new Date().toLocaleDateString()}
         </p>
