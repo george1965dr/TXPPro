@@ -31,7 +31,13 @@ delete from patients;
 -- Safe now that no treatment_plan_items reference them.
 delete from procedures;
 
--- Remove the uploaded photo/video file records for the deleted patients.
-delete from storage.objects where bucket_id = 'patient-media';
-
 -- practice_settings (id, name, address) is intentionally left alone.
+
+-- ============================================================================
+-- The patient_media DB rows above are gone, but the actual uploaded files in
+-- the "patient-media" Storage bucket are NOT - Supabase blocks direct SQL
+-- deletes on storage.objects ("Direct deletion from storage tables is not
+-- allowed. Use the Storage API instead."), by design, to avoid orphaning
+-- objects. Delete the files themselves from the Dashboard instead:
+--   Storage -> patient-media bucket -> select all -> Delete
+-- ============================================================================
