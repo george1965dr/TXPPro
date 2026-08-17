@@ -78,7 +78,7 @@ export function ConditionPalette({
               className={cn(
                 "px-3 py-1.5 text-sm",
                 view === "proposed"
-                  ? "bg-destructive text-white"
+                  ? "bg-success text-white"
                   : "bg-transparent text-muted-foreground hover:bg-accent",
               )}
             >

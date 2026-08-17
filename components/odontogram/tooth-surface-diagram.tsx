@@ -40,9 +40,9 @@ const VIEW_COLOR = {
     text: "var(--primary)",
   },
   proposed: {
-    fill: "color-mix(in oklch, var(--destructive) 15%, var(--background))",
-    stroke: "var(--destructive)",
-    text: "var(--destructive)",
+    fill: "color-mix(in oklch, var(--success) 15%, var(--background))",
+    stroke: "var(--success)",
+    text: "var(--success)",
   },
 } as const;
 

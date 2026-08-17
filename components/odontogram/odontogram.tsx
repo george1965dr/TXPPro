@@ -253,6 +253,14 @@ export function Odontogram({
 
   function handleSurfaceClick(toothNumber: number, surface: ToothSurface) {
     if (!editable || pendingBridge || conditionDef.target === "bridge") return; // bridges are whole-tooth only
+    // Overlays are tooth-level findings - a tooth with an existing filling
+    // (no whole-tooth state) renders as the 5-surface diagram, so clicking
+    // any zone of it should still toggle the overlay rather than silently
+    // doing nothing just because the click didn't land on the tooth number.
+    if (conditionDef.target === "overlay") {
+      applyTool(toothNumber, "whole");
+      return;
+    }
     applyTool(toothNumber, surface);
   }
 
