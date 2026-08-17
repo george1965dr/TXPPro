@@ -24,6 +24,8 @@ interface ToothSurfaceDiagramProps {
   hasPhoto?: boolean;
   /** Rendered pixel size of the square diagram (viewBox stays 44x44, so this just scales it). */
   size?: number;
+  /** Existing restoration + a caries signal on the same tooth - framed in a bright outline so it isn't missed. */
+  alert?: boolean;
   onSurfaceClick: (surface: ToothSurface) => void;
   onWholeClick: () => void;
   onOverlayClick: (overlay: OverlayType) => void;
@@ -78,6 +80,9 @@ const OVERLAY_BADGE: Record<OverlayType, string> = {
   biopsy: "Bx",
   soft_tissue_lesion: "SL",
   cyst: "Cy",
+  recurrent_caries: "RC",
+  open_contact: "OC",
+  fractured_restoration: "FR",
 };
 
 export function ToothSurfaceDiagram({
@@ -89,6 +94,7 @@ export function ToothSurfaceDiagram({
   bridge,
   hasPhoto,
   size = 40,
+  alert,
   onSurfaceClick,
   onWholeClick,
   onOverlayClick,
@@ -187,6 +193,19 @@ export function ToothSurfaceDiagram({
               </g>
             );
           })
+        )}
+        {alert && (
+          <rect
+            x={1.5}
+            y={1.5}
+            width={41}
+            height={41}
+            rx={5}
+            fill="none"
+            stroke="var(--destructive)"
+            strokeWidth={3}
+            style={{ pointerEvents: "none" }}
+          />
         )}
       </svg>
 

@@ -269,6 +269,7 @@ export function Odontogram({
         whole={display.whole}
         overlays={display.overlays}
         bridge={display.bridge}
+        alert={display.alert}
         hasPhoto={photoTeeth?.has(toothNumber)}
         onSurfaceClick={(surface) => handleSurfaceClick(toothNumber, surface)}
         onWholeClick={() => handleToothNumberClick(toothNumber)}

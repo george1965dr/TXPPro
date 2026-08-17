@@ -36,6 +36,7 @@ export function ReadOnlyOdontogram({ view, chartState, overlayState, bridges }: 
         whole={display.whole}
         overlays={display.overlays}
         bridge={display.bridge}
+        alert={display.alert}
         onSurfaceClick={noop}
         onWholeClick={noop}
         onOverlayClick={noop}

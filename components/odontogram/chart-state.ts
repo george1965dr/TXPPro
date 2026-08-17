@@ -110,7 +110,17 @@ export interface ResolvedToothDisplay {
   whole?: string;
   overlays: Partial<Record<OverlayType, true>>;
   bridge?: BridgeMembership;
+  /**
+   * True when this tooth has both an existing restoration (filling, crown,
+   * inlay/onlay, veneer, or a bridge abutment) and a caries signal (either
+   * plain caries on another surface, or the recurrent-caries overlay) - the
+   * one case this app has no other way to flag, since a filled surface can't
+   * also hold a second "caries" value in the same slot.
+   */
+  alert: boolean;
 }
+
+const RESTORATION_SURFACE_VALUES = new Set(["filling", "inlay_onlay", "veneer"]);
 
 /**
  * Resolves one tooth's chart/overlay/bridge state down to exactly what
@@ -143,11 +153,19 @@ export function resolveToothDisplay(
   }
 
   const membership = toothToBridge.get(toothNumber);
+  const surfaceValues = Object.values(surfaces);
+
+  const hasRestoration =
+    tooth?.whole[view] === "crown" ||
+    membership?.role === "abutment" ||
+    surfaceValues.some((v) => RESTORATION_SURFACE_VALUES.has(v));
+  const hasCariesSignal = overlays.recurrent_caries === true || surfaceValues.includes("caries");
 
   return {
     surfaces,
     whole: tooth?.whole[view],
     overlays,
     bridge: membership ? { role: membership.role } : undefined,
+    alert: hasRestoration && hasCariesSignal,
   };
 }

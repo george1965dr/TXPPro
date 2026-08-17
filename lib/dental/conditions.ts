@@ -2,6 +2,9 @@ export type ConditionId =
   // filling
   | "caries"
   | "filling"
+  | "recurrent_caries"
+  | "open_contact"
+  | "fractured_restoration"
   // prosthodontic
   | "crown"
   | "inlay_onlay"
@@ -64,6 +67,21 @@ export interface ConditionDef {
 export const CONDITIONS: ConditionDef[] = [
   { id: "caries", label: "Caries", target: "surface", group: "operative", existingOnly: true },
   { id: "filling", label: "Filling", target: "surface", group: "operative" },
+  {
+    id: "recurrent_caries",
+    label: "Recurrent caries",
+    target: "overlay",
+    group: "operative",
+    existingOnly: true,
+  },
+  { id: "open_contact", label: "Open contact", target: "overlay", group: "operative", existingOnly: true },
+  {
+    id: "fractured_restoration",
+    label: "Fractured restoration",
+    target: "overlay",
+    group: "operative",
+    existingOnly: true,
+  },
 
   { id: "crown", label: "Crown", target: "whole", group: "prosthodontic" },
   { id: "inlay_onlay", label: "Inlay / onlay", target: "surface", group: "prosthodontic" },
@@ -128,4 +146,7 @@ export const NON_BILLABLE_OVERLAYS = new Set([
   "impacted",
   "soft_tissue_lesion",
   "cyst",
+  "recurrent_caries",
+  "open_contact",
+  "fractured_restoration",
 ]);
