@@ -9,7 +9,13 @@ import { Button } from "@/components/ui/button";
 import type { BridgeType, ChartLayer, OverlayType, ToothSurface } from "@/lib/types";
 import { ConditionPalette } from "./condition-palette";
 import { ToothSurfaceDiagram } from "./tooth-surface-diagram";
-import { buildToothToBridge, type BridgeInfo, type ChartState, type OverlayState } from "./chart-state";
+import {
+  buildToothToBridge,
+  resolveToothDisplay,
+  type BridgeInfo,
+  type ChartState,
+  type OverlayState,
+} from "./chart-state";
 
 interface PendingBridge {
   first: number;
@@ -251,34 +257,18 @@ export function Odontogram({
   }
 
   const renderTooth = (toothNumber: number) => {
-    const membership = toothToBridge.get(toothNumber);
-    const tooth = chartState[toothNumber];
-
-    const resolvedSurfaces: Partial<Record<ToothSurface, string>> = {};
-    if (tooth) {
-      for (const [surface, value] of Object.entries(tooth.surfaces) as [ToothSurface, typeof tooth.surfaces[ToothSurface]][]) {
-        const resolved = value?.[view];
-        if (resolved) resolvedSurfaces[surface] = resolved;
-      }
-    }
-
-    const resolvedOverlays: Partial<Record<OverlayType, true>> = {};
-    const toothOverlays = overlayState[toothNumber];
-    if (toothOverlays) {
-      for (const [type, flags] of Object.entries(toothOverlays) as [OverlayType, typeof toothOverlays[OverlayType]][]) {
-        if (flags?.[view]) resolvedOverlays[type] = true;
-      }
-    }
+    const display = resolveToothDisplay(toothNumber, view, chartState, overlayState, toothToBridge);
 
     return (
       <ToothSurfaceDiagram
         key={toothNumber}
         toothNumber={toothNumber}
         view={view}
-        surfaces={resolvedSurfaces}
-        whole={tooth?.whole[view]}
-        overlays={resolvedOverlays}
-        bridge={membership ? { role: membership.role } : undefined}
+        size={56}
+        surfaces={display.surfaces}
+        whole={display.whole}
+        overlays={display.overlays}
+        bridge={display.bridge}
         hasPhoto={photoTeeth?.has(toothNumber)}
         onSurfaceClick={(surface) => handleSurfaceClick(toothNumber, surface)}
         onWholeClick={() => handleToothNumberClick(toothNumber)}
@@ -353,8 +343,8 @@ export function Odontogram({
       )}
 
       <div className="flex flex-col gap-3 overflow-x-auto pb-2">
-        <div className="flex justify-center gap-1.5">{UPPER_ARCH.map(renderTooth)}</div>
-        <div className="flex justify-center gap-1.5">{LOWER_ARCH.map(renderTooth)}</div>
+        <div className="flex justify-center gap-2">{UPPER_ARCH.map(renderTooth)}</div>
+        <div className="flex justify-center gap-2">{LOWER_ARCH.map(renderTooth)}</div>
       </div>
 
       <p className="text-xs text-muted-foreground">

@@ -22,6 +22,8 @@ interface ToothSurfaceDiagramProps {
   overlays?: Partial<Record<OverlayType, true>>;
   bridge?: BridgeMembership;
   hasPhoto?: boolean;
+  /** Rendered pixel size of the square diagram (viewBox stays 44x44, so this just scales it). */
+  size?: number;
   onSurfaceClick: (surface: ToothSurface) => void;
   onWholeClick: () => void;
   onOverlayClick: (overlay: OverlayType) => void;
@@ -86,6 +88,7 @@ export function ToothSurfaceDiagram({
   overlays,
   bridge,
   hasPhoto,
+  size = 40,
   onSurfaceClick,
   onWholeClick,
   onOverlayClick,
@@ -98,12 +101,12 @@ export function ToothSurfaceDiagram({
       {hasPhoto && (
         <span
           aria-label="Has photo"
-          className="absolute -top-0.5 right-1 flex size-3 items-center justify-center rounded-full bg-primary"
+          className="absolute -top-0.5 right-1 flex size-3.5 items-center justify-center rounded-full bg-primary"
         >
-          <Camera className="size-2 text-primary-foreground" />
+          <Camera className="size-2.5 text-primary-foreground" />
         </span>
       )}
-      <svg viewBox="0 0 44 44" width={40} height={40}>
+      <svg viewBox="0 0 44 44" width={size} height={size}>
         {bridge ? (
           <>
             <rect
@@ -188,17 +191,21 @@ export function ToothSurfaceDiagram({
       </svg>
 
       {bridge && (
-        <div className="h-1 w-9 rounded-full" style={{ background: color.stroke }} aria-hidden="true" />
+        <div
+          className="h-1 rounded-full"
+          style={{ background: color.stroke, width: size - 4 }}
+          aria-hidden="true"
+        />
       )}
 
       {overlayTypes.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-0.5" style={{ maxWidth: 40 }}>
+        <div className="flex flex-wrap justify-center gap-0.5" style={{ maxWidth: size }}>
           {overlayTypes.map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => onOverlayClick(type)}
-              className="cursor-pointer rounded-sm px-0.5 text-[8px] leading-tight"
+              className="cursor-pointer rounded-sm px-1 text-[9px] leading-tight"
               style={{ background: color.fill, color: color.text }}
             >
               {OVERLAY_BADGE[type]}
@@ -210,7 +217,7 @@ export function ToothSurfaceDiagram({
       <button
         type="button"
         onClick={onWholeClick}
-        className="text-xs text-muted-foreground hover:text-foreground"
+        className="text-sm text-muted-foreground hover:text-foreground"
       >
         #{toothNumber}
       </button>

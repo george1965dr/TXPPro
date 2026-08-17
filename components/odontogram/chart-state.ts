@@ -7,6 +7,7 @@ import type {
   ToothOverlay,
   ToothSurface,
 } from "@/lib/types";
+import type { BridgeMembership } from "./tooth-surface-diagram";
 
 /**
  * Existing and proposed are stored independently per slot, never merged -
@@ -102,4 +103,51 @@ export function buildToothToBridge(
     }
   }
   return map;
+}
+
+export interface ResolvedToothDisplay {
+  surfaces: Partial<Record<ToothSurface, string>>;
+  whole?: string;
+  overlays: Partial<Record<OverlayType, true>>;
+  bridge?: BridgeMembership;
+}
+
+/**
+ * Resolves one tooth's chart/overlay/bridge state down to exactly what
+ * ToothSurfaceDiagram needs for a given view - shared by the editable
+ * Odontogram and the read-only preview so they can never render a tooth
+ * differently from each other.
+ */
+export function resolveToothDisplay(
+  toothNumber: number,
+  view: ChartLayer,
+  chartState: ChartState,
+  overlayState: OverlayState,
+  toothToBridge: Map<number, { bridge: BridgeInfo; role: BridgeRole }>,
+): ResolvedToothDisplay {
+  const tooth = chartState[toothNumber];
+  const surfaces: Partial<Record<ToothSurface, string>> = {};
+  if (tooth) {
+    for (const [surface, value] of Object.entries(tooth.surfaces) as [ToothSurface, LayeredValue | undefined][]) {
+      const resolved = value?.[view];
+      if (resolved) surfaces[surface] = resolved;
+    }
+  }
+
+  const overlays: Partial<Record<OverlayType, true>> = {};
+  const toothOverlays = overlayState[toothNumber];
+  if (toothOverlays) {
+    for (const [type, flags] of Object.entries(toothOverlays) as [OverlayType, LayeredFlag | undefined][]) {
+      if (flags?.[view]) overlays[type] = true;
+    }
+  }
+
+  const membership = toothToBridge.get(toothNumber);
+
+  return {
+    surfaces,
+    whole: tooth?.whole[view],
+    overlays,
+    bridge: membership ? { role: membership.role } : undefined,
+  };
 }

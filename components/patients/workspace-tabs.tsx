@@ -15,8 +15,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useHeaderInfo } from "@/components/header-context";
 import { Odontogram } from "@/components/odontogram/odontogram";
+import { ReadOnlyOdontogram } from "@/components/odontogram/read-only-odontogram";
 import {
   buildBridgeInfos,
   buildChartState,
@@ -135,6 +137,7 @@ export function WorkspaceTabs({
   const [chartBridges, setChartBridges] = useState<BridgeInfo[]>(() => buildBridgeInfos(bridges, bridgeTeeth));
 
   const [isSavingBoard, startBoardSave] = useTransition();
+  const [showProposedChart, setShowProposedChart] = useState(true);
 
   // Read via ref inside async callbacks so they can stay referentially
   // stable instead of re-subscribing every time planId resolves.
@@ -347,6 +350,31 @@ export function WorkspaceTabs({
       </TabsContent>
       <TabsContent value="sequence" className="pt-4">
         <div className="flex flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Proposed treatment</CardTitle>
+              <CardAction>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowProposedChart((v) => !v)}
+                >
+                  {showProposedChart ? "Hide" : "Show"}
+                </Button>
+              </CardAction>
+            </CardHeader>
+            {showProposedChart && (
+              <CardContent>
+                <ReadOnlyOdontogram
+                  view="proposed"
+                  chartState={chartState}
+                  overlayState={overlayState}
+                  bridges={chartBridges}
+                />
+              </CardContent>
+            )}
+          </Card>
           <div className="flex justify-end">
             <AlertDialog>
               <AlertDialogTrigger asChild>
