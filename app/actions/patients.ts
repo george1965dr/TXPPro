@@ -65,6 +65,17 @@ export async function updatePatient(patientId: string, formData: FormData) {
   revalidatePath(`/patients/${patientId}`);
 }
 
+export async function updateChartNotes(patientId: string, notes: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("patients").update({ chart_notes: notes }).eq("id", patientId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath(`/patients/${patientId}`);
+}
+
 export async function archivePatient(patientId: string) {
   const supabase = await createClient();
   const { error } = await supabase

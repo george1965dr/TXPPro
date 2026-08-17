@@ -19,6 +19,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { useHeaderInfo } from "@/components/header-context";
 import { Odontogram } from "@/components/odontogram/odontogram";
 import { ReadOnlyOdontogram } from "@/components/odontogram/read-only-odontogram";
+import { ChartNotes } from "@/components/patients/chart-notes";
 import {
   buildBridgeInfos,
   buildChartState,
@@ -70,6 +71,7 @@ const TAB_LABEL: Record<string, string> = {
 interface WorkspaceTabsProps {
   patientId: string;
   patientName: string;
+  chartNotes: string;
   toothConditions: ToothCondition[];
   toothOverlays: ToothOverlay[];
   bridges: Bridge[];
@@ -87,6 +89,7 @@ interface WorkspaceTabsProps {
 export function WorkspaceTabs({
   patientId,
   patientName,
+  chartNotes,
   toothConditions,
   toothOverlays,
   bridges,
@@ -366,13 +369,14 @@ export function WorkspaceTabs({
               </CardAction>
             </CardHeader>
             {showExistingChart && (
-              <CardContent>
+              <CardContent className="flex flex-col gap-4">
                 <ReadOnlyOdontogram
                   view="existing"
                   chartState={chartState}
                   overlayState={overlayState}
                   bridges={chartBridges}
                 />
+                <ChartNotes patientId={patientId} initialNotes={chartNotes} />
               </CardContent>
             )}
           </Card>

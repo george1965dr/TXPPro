@@ -156,6 +156,7 @@ export default async function PatientWorkspacePage({
       <WorkspaceTabs
         patientId={typedPatient.id}
         patientName={typedPatient.name}
+        chartNotes={typedPatient.chart_notes ?? ""}
         toothConditions={(toothConditions ?? []) as ToothCondition[]}
         toothOverlays={(toothOverlays ?? []) as ToothOverlay[]}
         bridges={bridges}

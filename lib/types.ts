@@ -4,6 +4,7 @@ export interface Patient {
   birth_date: string
   email?: string
   medical_history?: string
+  chart_notes: string
   archived_at?: string | null
   created_at: string
   updated_at: string
