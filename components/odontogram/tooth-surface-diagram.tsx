@@ -203,7 +203,7 @@ export function ToothSurfaceDiagram({
             rx={5}
             fill="none"
             stroke="var(--destructive)"
-            strokeWidth={3}
+            strokeWidth={1.5}
             style={{ pointerEvents: "none" }}
           />
         )}
