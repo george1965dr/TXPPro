@@ -1,3 +1,3 @@
 @echo off
 cd /d "%~dp0"
-call npm run dev -- -p 3002
+call npm run dev

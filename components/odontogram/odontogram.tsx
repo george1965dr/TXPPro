@@ -245,6 +245,13 @@ export function Odontogram({
       handleBridgeClick(toothNumber);
       return;
     }
+    // Veneers are always facial - clicking the tooth number is a shortcut
+    // for the facial surface instead of requiring a precise click on that
+    // one zone of the 5-surface diagram.
+    if (condition === "veneer") {
+      applyTool(toothNumber, "facial");
+      return;
+    }
     applyTool(toothNumber, "whole");
   }
 
@@ -343,7 +350,9 @@ export function Odontogram({
                 : `Click the other end of the bridge (started at #${bridgeFirstTooth})`
               : conditionDef.target === "overlay"
                 ? "Click the tooth number (or its badge again) to toggle this finding"
-                : "Click a surface to chart it · click the tooth number for crown, implant, or missing"}
+                : condition === "veneer"
+                  ? "Click the tooth number to chart it on the facial surface, or click a surface directly"
+                  : "Click a surface to chart it · click the tooth number for crown, implant, or missing"}
         </p>
       )}
 

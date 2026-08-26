@@ -53,6 +53,13 @@ const ALERT_COLOR = {
   text: "var(--destructive)",
 };
 
+/** Veneers render green regardless of layer/view - visually distinct from every other surface finding. */
+const VENEER_COLOR = {
+  fill: "color-mix(in oklch, var(--success) 15%, var(--background))",
+  stroke: "var(--success)",
+  text: "var(--success)",
+};
+
 const CONDITION_LETTER: Record<string, string> = {
   caries: "c",
   filling: "f",
@@ -166,7 +173,13 @@ export function ToothSurfaceDiagram({
         ) : (
           SURFACE_ORDER.map((surface) => {
             const entry = surfaces[surface];
-            const zoneColor = entry ? restorationColor : EMPTY_COLOR;
+            const zoneColor = !entry
+              ? EMPTY_COLOR
+              : alert
+                ? ALERT_COLOR
+                : entry === "veneer"
+                  ? VENEER_COLOR
+                  : color;
             const labelPos = SURFACE_LABEL_POSITION[surface];
             return (
               <g key={surface}>
