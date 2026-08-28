@@ -173,10 +173,43 @@ function adaCodeForSurfaceCondition(conditionId: ConditionId, surfaceCount: numb
 }
 
 /**
+ * Pure lookup of the ADA code(s) this addition bills under - no DB writes,
+ * safe to call before we know every code has a published fee on file. Must
+ * stay in exact sync with drawProposedGraphic's own resolution below (same
+ * source functions, called the same way) since it exists purely to let the
+ * caller validate before drawProposedGraphic writes anything.
+ */
+function requiredAdaCodes(input: KanbanAddInput): string[] {
+  switch (input.kind) {
+    case "surface":
+      return [adaCodeForSurfaceCondition(input.conditionId, input.surfaces.length)];
+    case "whole":
+      return [adaCodeForWholeTooth(input.conditionId as WholeToothCondition)];
+    case "overlay": {
+      const adaCode = adaCodeForOverlay(input.conditionId as OverlayType, toothPosition(input.toothNumber));
+      if (!adaCode) throw new Error(`"${input.conditionId}" has no billable code.`);
+      return [adaCode];
+    }
+    case "bridge": {
+      const bridgeType: BridgeType = input.conditionId === "implant_bridge" ? "implant" : "tooth";
+      return input.teeth.map((t) =>
+        t.role === "abutment" ? adaCodeForBridgeRetainer(bridgeType) : adaCodeForBridgePontic(),
+      );
+    }
+  }
+}
+
+/**
  * Draws the proposed-layer chart graphic for this addition (via the same
  * chart.ts actions the odontogram's own paint handlers use for the
  * existing layer) and resolves the ADA code(s) it bills under. One entry
  * per tooth for a bridge, exactly one otherwise.
+ *
+ * Only call this once every code from requiredAdaCodes has a published fee
+ * on file - it writes the chart graphic (and, for a bridge, the bridge/
+ * bridge_teeth rows) immediately and unconditionally, so calling it before
+ * that check leaves an orphaned graphic with no treatment-plan item behind
+ * if the fee lookup then fails.
  */
 async function drawProposedGraphic(patientId: string, input: KanbanAddInput): Promise<ResolvedLineItem[]> {
   switch (input.kind) {
@@ -264,9 +297,12 @@ export async function addKanbanProcedure(
   // `await` below - pin it to its own const so later uses stay typed.
   const resolvedPlanId = planId!;
 
-  const resolved = await drawProposedGraphic(patientId, input);
-
-  const adaCodes = [...new Set(resolved.map((r) => r.adaCode))];
+  // Validate every code this addition needs has a published fee BEFORE
+  // drawProposedGraphic writes the chart graphic (and, for a bridge, the
+  // bridge itself) - otherwise a missing fee leaves a drawn graphic behind
+  // with no treatment-plan item to show for it, and no way to remove it
+  // from the kanban since there's no item there to delete.
+  const adaCodes = [...new Set(requiredAdaCodes(input))];
   const { data: procedureRows, error: procError } = await supabase
     .from("procedures")
     .select("id, ada_code, description, fee")
@@ -278,6 +314,8 @@ export async function addKanbanProcedure(
   if (missing.length > 0) {
     throw new Error(`No published fee on file for ${missing.join(", ")} - add it to the procedure list first.`);
   }
+
+  const resolved = await drawProposedGraphic(patientId, input);
 
   const { data: inserted, error: insertError } = await supabase
     .from("treatment_plan_items")
