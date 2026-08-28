@@ -24,6 +24,7 @@ export type ConditionId =
   | "soft_tissue_graft"
   | "sinus_lift"
   | "cyst_removal"
+  | "gtr"
   // pathology
   | "biopsy"
   | "soft_tissue_lesion"
@@ -107,6 +108,7 @@ export const CONDITIONS: ConditionDef[] = [
   { id: "soft_tissue_graft", label: "Soft tissue graft", target: "overlay", group: "surgical" },
   { id: "sinus_lift", label: "Sinus lift", target: "overlay", group: "surgical" },
   { id: "cyst_removal", label: "Cyst removal", target: "overlay", group: "surgical" },
+  { id: "gtr", label: "Guided tissue regeneration", target: "overlay", group: "surgical" },
 
   { id: "biopsy", label: "Biopsy", target: "overlay", group: "pathology", proposedOnly: true },
   {

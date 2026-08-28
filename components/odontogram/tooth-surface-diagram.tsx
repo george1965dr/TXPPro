@@ -5,10 +5,11 @@ import {
   SURFACE_ZONE_POINTS,
   SURFACE_LABEL_POSITION,
 } from "@/lib/dental/tooth-geometry";
-import type { BridgeRole, ChartLayer, OverlayType, ToothSurface } from "@/lib/types";
+import type { BridgeRole, BridgeType, ChartLayer, OverlayType, ToothSurface } from "@/lib/types";
 
 export interface BridgeMembership {
   role: BridgeRole;
+  bridgeType: BridgeType;
 }
 
 interface ToothSurfaceDiagramProps {
@@ -95,6 +96,7 @@ const OVERLAY_BADGE: Record<OverlayType, string> = {
   recurrent_caries: "RC",
   open_contact: "OC",
   fractured_restoration: "FR",
+  gtr: "GTR",
 };
 
 export function ToothSurfaceDiagram({
@@ -142,7 +144,7 @@ export function ToothSurfaceDiagram({
               fill={restorationColor.text}
               style={{ pointerEvents: "none" }}
             >
-              {bridge.role === "abutment" ? "AB" : "PO"}
+              {bridge.role === "abutment" ? (bridge.bridgeType === "implant" ? "IAB" : "AB") : "PO"}
             </text>
           </>
         ) : whole ? (

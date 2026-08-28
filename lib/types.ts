@@ -112,6 +112,7 @@ export type OverlayType =
   | "biopsy"
   | "soft_tissue_lesion"
   | "cyst"
+  | "gtr"
 
 export interface ToothOverlay {
   id: string

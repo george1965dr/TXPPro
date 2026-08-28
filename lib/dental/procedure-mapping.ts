@@ -32,10 +32,10 @@ const INLAY_CODE = "D2650" // 1-2 surfaces
 const ONLAY_CODE = "D2664" // 3+ surfaces
 
 const BRIDGE_RETAINER_CODES: Record<BridgeType, string> = {
-  tooth: "D6750", // retainer crown, tooth-supported
-  implant: "D6068", // abutment supported retainer crown, implant-supported
+  tooth: "D6740", // retainer crown, porcelain/ceramic, tooth-supported
+  implant: "D6075", // implant supported retainer for ceramic FPD
 }
-const BRIDGE_PONTIC_CODE = "D6240"
+const BRIDGE_PONTIC_CODE = "D6245"
 
 /** Root canal / retreatment / apicoectomy fees differ by tooth position (CDT convention). */
 const ROOT_CANAL_CODES: Record<ToothPosition, string> = {
@@ -61,6 +61,7 @@ const FLAT_OVERLAY_CODES: Partial<Record<OverlayType, string>> = {
   sinus_lift: "D7951",
   cyst_removal: "D7450",
   biopsy: "D7286",
+  gtr: "D4266",
 }
 
 const POSITION_BASED_OVERLAY_CODES: Partial<Record<OverlayType, Record<ToothPosition, string>>> = {

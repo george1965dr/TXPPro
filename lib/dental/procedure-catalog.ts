@@ -26,7 +26,7 @@ export type CatalogEntry =
   | { conditionId: ConditionId; toothMode: "bridge" };
 
 const POSITIONS: ToothPosition[] = ["anterior", "premolar", "molar"];
-const FLAT_OVERLAYS: OverlayType[] = ["bone_graft", "soft_tissue_graft", "sinus_lift", "cyst_removal", "biopsy"];
+const FLAT_OVERLAYS: OverlayType[] = ["bone_graft", "soft_tissue_graft", "sinus_lift", "cyst_removal", "biopsy", "gtr"];
 const POSITION_OVERLAYS: OverlayType[] = ["root_canal", "retreatment", "apicoectomy"];
 
 function buildCatalog(): Map<string, CatalogEntry> {
