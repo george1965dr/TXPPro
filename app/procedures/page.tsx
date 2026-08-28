@@ -1,9 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProcedureDialog } from "@/components/procedures/procedure-dialog";
-import { DeleteProcedureButton } from "@/components/procedures/delete-procedure-button";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Pencil } from "lucide-react";
+import { ProcedureList } from "@/components/procedures/procedure-list";
 import type { Procedure } from "@/lib/types";
 
 export default async function ProceduresPage() {
@@ -23,45 +20,7 @@ export default async function ProceduresPage() {
         <ProcedureDialog />
       </div>
 
-      {procedures.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            No procedures yet. Add one to start pricing treatment plans.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {procedures.map((procedure) => (
-            <Card key={procedure.id}>
-              <CardContent className="flex items-center justify-between py-3">
-                <div>
-                  <p className="font-semibold">
-                    {procedure.ada_code}
-                    <span className="ml-2 font-normal text-muted-foreground">{procedure.description}</span>
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-semibold text-primary">${procedure.fee.toLocaleString()}</span>
-                    <span className="text-muted-foreground">
-                      {procedure.tooth_required ? " · tooth required" : ""}
-                    </span>
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ProcedureDialog
-                    procedure={procedure}
-                    trigger={
-                      <Button variant="outline" size="icon" aria-label={`Edit ${procedure.ada_code}`}>
-                        <Pencil className="size-4" />
-                      </Button>
-                    }
-                  />
-                  <DeleteProcedureButton procedureId={procedure.id} adaCode={procedure.ada_code} />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <ProcedureList procedures={procedures} />
     </div>
   );
 }
