@@ -165,7 +165,7 @@ export function resolveToothDisplay(
     surfaces,
     whole: tooth?.whole[view],
     overlays,
-    bridge: membership ? { role: membership.role } : undefined,
+    bridge: membership ? { role: membership.role, bridgeType: membership.bridge.bridgeType } : undefined,
     alert: hasRestoration && hasCariesSignal,
   };
 }
