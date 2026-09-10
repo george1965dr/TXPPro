@@ -9,9 +9,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { Patient } from "@/lib/types";
 
-export function PatientList({ patients }: { patients: Patient[] }) {
+interface PatientListProps {
+  patients: Patient[];
+  acceptedPatientIds: string[];
+}
+
+export function PatientList({ patients, acceptedPatientIds }: PatientListProps) {
   const [query, setQuery] = useState("");
   const [showArchived, setShowArchived] = useState(false);
+
+  const acceptedIds = useMemo(() => new Set(acceptedPatientIds), [acceptedPatientIds]);
 
   const archivedCount = useMemo(() => patients.filter((p) => p.archived_at).length, [patients]);
 
@@ -88,7 +95,12 @@ export function PatientList({ patients }: { patients: Patient[] }) {
                 <Card className="transition-colors hover:bg-accent/50">
                   <CardContent className="flex items-center justify-between py-4">
                     <div>
-                      <p className="font-medium">{patient.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{patient.name}</p>
+                        {acceptedIds.has(patient.id) && (
+                          <Badge className="bg-green-600 text-white dark:bg-green-500">Accepted</Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         Born {new Date(patient.birth_date).toLocaleDateString()}
                         {patient.email ? ` · ${patient.email}` : ""}
