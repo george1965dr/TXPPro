@@ -78,7 +78,7 @@ export type ChartLayer = "existing" | "proposed"
 
 export type ToothSurface = "mesial" | "distal" | "occlusal" | "facial" | "lingual"
 
-export type SurfaceCondition = "caries" | "filling" | "sealant" | "veneer" | "inlay_onlay"
+export type SurfaceCondition = "caries" | "filling" | "sealant" | "veneer" | "inlay" | "onlay"
 
 export type WholeToothCondition = "crown" | "implant" | "missing" | "extraction"
 

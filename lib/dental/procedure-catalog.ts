@@ -2,7 +2,8 @@ import type { ConditionId } from "@/lib/dental/conditions";
 import {
   adaCodeForBridgeRetainer,
   adaCodeForFilling,
-  adaCodeForInlayOnlay,
+  adaCodeForInlay,
+  adaCodeForOnlay,
   adaCodeForOverlay,
   adaCodeForVeneer,
   adaCodeForWholeTooth,
@@ -22,7 +23,15 @@ import type { OverlayType } from "@/lib/types";
 export type CatalogEntry =
   | { conditionId: ConditionId; toothMode: "whole" }
   | { conditionId: ConditionId; toothMode: "overlay"; expectedPosition?: ToothPosition }
-  | { conditionId: ConditionId; toothMode: "surface"; minSurfaces: number; maxSurfaces: number | null }
+  | {
+      conditionId: ConditionId;
+      toothMode: "surface";
+      minSurfaces: number;
+      maxSurfaces: number | null;
+      // "posterior" covers both premolar and molar - CDT doesn't split composite
+      // filling fees any finer than anterior/posterior.
+      expectedPosition?: ToothPosition | "posterior";
+    }
   | { conditionId: ConditionId; toothMode: "bridge" };
 
 const POSITIONS: ToothPosition[] = ["anterior", "premolar", "molar"];
@@ -37,16 +46,43 @@ function buildCatalog(): Map<string, CatalogEntry> {
   map.set(adaCodeForWholeTooth("extraction"), { conditionId: "extraction", toothMode: "whole" });
 
   for (let n = 1; n <= 4; n++) {
-    map.set(adaCodeForFilling(n), {
+    map.set(adaCodeForFilling(n, "molar"), {
       conditionId: "filling",
+      toothMode: "surface",
+      minSurfaces: n,
+      maxSurfaces: n === 4 ? null : n,
+      expectedPosition: "posterior",
+    });
+    map.set(adaCodeForFilling(n, "anterior"), {
+      conditionId: "filling",
+      toothMode: "surface",
+      minSurfaces: n,
+      maxSurfaces: n === 4 ? null : n,
+      expectedPosition: "anterior",
+    });
+  }
+  map.set(adaCodeForVeneer(), { conditionId: "veneer", toothMode: "surface", minSurfaces: 1, maxSurfaces: null });
+
+  for (let n = 1; n <= 3; n++) {
+    map.set(adaCodeForInlay(n), {
+      conditionId: "inlay",
+      toothMode: "surface",
+      minSurfaces: n,
+      maxSurfaces: n === 3 ? null : n,
+    });
+  }
+  for (let n = 2; n <= 4; n++) {
+    map.set(adaCodeForOnlay(n), {
+      conditionId: "onlay",
       toothMode: "surface",
       minSurfaces: n,
       maxSurfaces: n === 4 ? null : n,
     });
   }
-  map.set(adaCodeForVeneer(), { conditionId: "veneer", toothMode: "surface", minSurfaces: 1, maxSurfaces: null });
-  map.set(adaCodeForInlayOnlay(1), { conditionId: "inlay_onlay", toothMode: "surface", minSurfaces: 1, maxSurfaces: 2 });
-  map.set(adaCodeForInlayOnlay(3), { conditionId: "inlay_onlay", toothMode: "surface", minSurfaces: 3, maxSurfaces: null });
+  // D2544 (metallic, 4+ surfaces) bills the same 4+ surface onlay as D2644
+  // (porcelain/ceramic) - a material variant of the same tier, not derivable
+  // from adaCodeForOnlay since that only returns the ceramic default.
+  map.set("D2544", { conditionId: "onlay", toothMode: "surface", minSurfaces: 4, maxSurfaces: null });
 
   for (const overlay of FLAT_OVERLAYS) {
     const code = adaCodeForOverlay(overlay, "anterior");

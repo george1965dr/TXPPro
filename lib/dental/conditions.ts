@@ -7,7 +7,8 @@ export type ConditionId =
   | "fractured_restoration"
   // prosthodontic
   | "crown"
-  | "inlay_onlay"
+  | "inlay"
+  | "onlay"
   | "veneer"
   | "bridge"
   | "implant_bridge"
@@ -85,7 +86,8 @@ export const CONDITIONS: ConditionDef[] = [
   },
 
   { id: "crown", label: "Crown", target: "whole", group: "prosthodontic" },
-  { id: "inlay_onlay", label: "Inlay / onlay", target: "surface", group: "prosthodontic" },
+  { id: "inlay", label: "Inlay", target: "surface", group: "prosthodontic" },
+  { id: "onlay", label: "Onlay", target: "surface", group: "prosthodontic" },
   { id: "veneer", label: "Veneer", target: "surface", group: "prosthodontic" },
   { id: "bridge", label: "Bridge", target: "bridge", group: "prosthodontic" },
   { id: "implant_bridge", label: "Implant-retained bridge", target: "bridge", group: "prosthodontic" },

@@ -13,11 +13,18 @@ import type { ToothPosition } from "@/lib/dental/tooth-geometry"
  * against the practice's real fee schedule before relying on generated fees.
  */
 
-const FILLING_CODES_BY_SURFACE_COUNT: Record<number, string> = {
+const POSTERIOR_FILLING_CODES_BY_SURFACE_COUNT: Record<number, string> = {
   1: "D2391",
   2: "D2392",
   3: "D2393",
   4: "D2394", // also used for 4+ surfaces
+}
+
+const ANTERIOR_FILLING_CODES_BY_SURFACE_COUNT: Record<number, string> = {
+  1: "D2330",
+  2: "D2331",
+  3: "D2332",
+  4: "D2335", // also used for 4+ surfaces
 }
 
 const WHOLE_TOOTH_CODES: Record<WholeToothCondition, string> = {
@@ -28,8 +35,20 @@ const WHOLE_TOOTH_CODES: Record<WholeToothCondition, string> = {
 }
 
 const VENEER_CODE = "D2962"
-const INLAY_CODE = "D2650" // 1-2 surfaces
-const ONLAY_CODE = "D2664" // 3+ surfaces
+
+// Inlay and onlay are separate procedures, not a single one split by surface
+// count - they overlap on the same counts (e.g. a 2-surface inlay and a
+// 2-surface onlay are different codes/fees), so each needs its own table.
+const INLAY_CODES_BY_SURFACE_COUNT: Record<number, string> = {
+  1: "D2610",
+  2: "D2620",
+  3: "D2630", // also used for 3+ surfaces
+}
+const ONLAY_CODES_BY_SURFACE_COUNT: Record<number, string> = {
+  2: "D2642", // also used for <=2 surfaces - an onlay caps at least one cusp
+  3: "D2643",
+  4: "D2644", // also used for 4+ surfaces
+}
 
 const BRIDGE_RETAINER_CODES: Record<BridgeType, string> = {
   tooth: "D6740", // retainer crown, porcelain/ceramic, tooth-supported
@@ -81,17 +100,25 @@ export function isBillableOverlay(overlayType: OverlayType): boolean {
   return !NON_BILLABLE_OVERLAYS.has(overlayType)
 }
 
-export function adaCodeForFilling(surfaceCount: number): string {
+export function adaCodeForFilling(surfaceCount: number, position: ToothPosition): string {
   const tier = Math.min(surfaceCount, 4)
-  return FILLING_CODES_BY_SURFACE_COUNT[tier]
+  const table = position === "anterior" ? ANTERIOR_FILLING_CODES_BY_SURFACE_COUNT : POSTERIOR_FILLING_CODES_BY_SURFACE_COUNT
+  return table[tier]
 }
 
 export function adaCodeForVeneer(): string {
   return VENEER_CODE
 }
 
-export function adaCodeForInlayOnlay(surfaceCount: number): string {
-  return surfaceCount <= 2 ? INLAY_CODE : ONLAY_CODE
+export function adaCodeForInlay(surfaceCount: number): string {
+  const tier = Math.min(Math.max(surfaceCount, 1), 3)
+  return INLAY_CODES_BY_SURFACE_COUNT[tier]
+}
+
+/** An onlay caps at least one cusp - clinically never a 1-surface restoration, so the smallest tier is 2. */
+export function adaCodeForOnlay(surfaceCount: number): string {
+  const tier = Math.min(Math.max(surfaceCount, 2), 4)
+  return ONLAY_CODES_BY_SURFACE_COUNT[tier]
 }
 
 export function adaCodeForWholeTooth(condition: WholeToothCondition): string {

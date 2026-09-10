@@ -120,7 +120,7 @@ export interface ResolvedToothDisplay {
   alert: boolean;
 }
 
-const RESTORATION_SURFACE_VALUES = new Set(["filling", "inlay_onlay", "veneer"]);
+const RESTORATION_SURFACE_VALUES = new Set(["filling", "inlay", "onlay", "veneer"]);
 
 /**
  * Resolves one tooth's chart/overlay/bridge state down to exactly what

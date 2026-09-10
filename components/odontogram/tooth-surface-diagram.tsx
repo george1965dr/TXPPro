@@ -66,7 +66,8 @@ const CONDITION_LETTER: Record<string, string> = {
   filling: "f",
   sealant: "s",
   veneer: "v",
-  inlay_onlay: "i",
+  inlay: "i",
+  onlay: "o",
 };
 
 const WHOLE_LABEL: Record<string, string> = {

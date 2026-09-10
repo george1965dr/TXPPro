@@ -97,10 +97,18 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
   const entry = selected ? PROCEDURE_CATALOG.get(selected.ada_code) ?? null : null;
   const parsedTooth = parseTooth(toothNumber);
 
-  const positionError =
-    entry?.toothMode === "overlay" && entry.expectedPosition && parsedTooth !== null && toothPosition(parsedTooth) !== entry.expectedPosition
-      ? `Tooth #${parsedTooth} is a ${toothPosition(parsedTooth)} tooth — this code is for ${entry.expectedPosition} teeth.`
-      : null;
+  const expectedPosition =
+    entry?.toothMode === "overlay" || entry?.toothMode === "surface" ? entry.expectedPosition : undefined;
+  const actualPosition = parsedTooth !== null ? toothPosition(parsedTooth) : null;
+  const positionMismatch =
+    expectedPosition && actualPosition
+      ? expectedPosition === "posterior"
+        ? actualPosition === "anterior"
+        : actualPosition !== expectedPosition
+      : false;
+  const positionError = positionMismatch
+    ? `Tooth #${parsedTooth} is a ${actualPosition} tooth — this code is for ${expectedPosition} teeth.`
+    : null;
 
   const surfaceCountError =
     entry?.toothMode === "surface" && surfaces.length > 0 && (surfaces.length < entry.minSurfaces || (entry.maxSurfaces !== null && surfaces.length > entry.maxSurfaces))
@@ -132,7 +140,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
       : entry.toothMode === "bridge"
         ? bridgeTeeth !== null
         : entry.toothMode === "surface"
-          ? parsedTooth !== null && surfaces.length > 0 && !surfaceCountError
+          ? parsedTooth !== null && surfaces.length > 0 && !surfaceCountError && !positionError
           : parsedTooth !== null && !positionError;
 
   function submit() {
