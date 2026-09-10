@@ -88,7 +88,9 @@ export default async function PresentPlanPage({
     }
   }
 
-  const backHref = `/patients/${id}`;
+  const backHref = `/patients/${id}?tab=sequence`;
+  const summary = activePlan ? buildPresentSummary(items, sequencedItems) : null;
+  const hasUnscheduled = (summary?.unscheduled.items.length ?? 0) > 0;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
@@ -105,7 +107,7 @@ export default async function PresentPlanPage({
         <Button variant="outline" size="sm" asChild>
           <Link href={backHref}>
             <ArrowLeft className="size-4" />
-            Back to workspace
+            Back to sequence
           </Link>
         </Button>
         {activePlan && (
@@ -113,6 +115,7 @@ export default async function PresentPlanPage({
             patientId={id}
             treatmentPlanId={activePlan.id}
             accepted={activePlan.accepted_at != null}
+            hasUnscheduled={hasUnscheduled}
           />
         )}
       </div>
@@ -129,37 +132,30 @@ export default async function PresentPlanPage({
         )}
       </div>
 
-      {!activePlan || items.length === 0 ? (
+      {!activePlan || !summary || items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Nothing on this plan yet. Chart proposed treatment or add a procedure, then come back here.
         </p>
       ) : (
         <>
-          {(() => {
-            const summary = buildPresentSummary(items, sequencedItems);
-            return (
-              <>
-                {summary.visits.map((visit) => (
-                  <VisitSection key={visit.label} visit={visit} />
-                ))}
-                <VisitSection visit={summary.unscheduled} />
+          {summary.visits.map((visit) => (
+            <VisitSection key={visit.label} visit={visit} />
+          ))}
+          <VisitSection visit={summary.unscheduled} />
 
-                <PresentTotals
-                  patientId={id}
-                  treatmentPlanId={activePlan!.id}
-                  subtotal={summary.grandTotal}
-                  initialAdjustment={activePlan!.adjustment}
-                />
+          <PresentTotals
+            patientId={id}
+            treatmentPlanId={activePlan.id}
+            subtotal={summary.grandTotal}
+            initialAdjustment={activePlan.adjustment}
+          />
 
-                <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
-                  <div className="h-10 border-b border-foreground/40" />
-                  <div className="h-10 border-b border-foreground/40" />
-                  <p className="text-muted-foreground">Patient signature</p>
-                  <p className="text-muted-foreground">Date</p>
-                </div>
-              </>
-            );
-          })()}
+          <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+            <div className="h-10 border-b border-foreground/40" />
+            <div className="h-10 border-b border-foreground/40" />
+            <p className="text-muted-foreground">Patient signature</p>
+            <p className="text-muted-foreground">Date</p>
+          </div>
         </>
       )}
     </div>

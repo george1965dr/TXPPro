@@ -8,7 +8,8 @@ import {
   adaCodeForBridgePontic,
   adaCodeForBridgeRetainer,
   adaCodeForFilling,
-  adaCodeForInlayOnlay,
+  adaCodeForInlay,
+  adaCodeForOnlay,
   adaCodeForOverlay,
   adaCodeForVeneer,
   adaCodeForWholeTooth,
@@ -72,6 +73,7 @@ export async function addProcedureToPlan(
   if (error) throw new Error(error.message);
 
   revalidatePath(`/patients/${patientId}`);
+  revalidatePath(`/patients/${patientId}/present`);
   return { planId, item: item as { id: string; procedure: Procedure } };
 }
 
@@ -95,6 +97,7 @@ export async function scheduleItem(
       .eq("treatment_plan_item_id", itemId);
     if (error) throw new Error(error.message);
     revalidatePath(`/patients/${patientId}`);
+    revalidatePath(`/patients/${patientId}/present`);
     return;
   }
 
@@ -126,6 +129,7 @@ export async function scheduleItem(
 
   if (error) throw new Error(error.message);
   revalidatePath(`/patients/${patientId}`);
+  revalidatePath(`/patients/${patientId}/present`);
 }
 
 export async function updatePlanItemFee(patientId: string, itemId: string, fee: number) {
@@ -133,6 +137,7 @@ export async function updatePlanItemFee(patientId: string, itemId: string, fee: 
   const { error } = await supabase.from("treatment_plan_items").update({ fee }).eq("id", itemId);
   if (error) throw new Error(error.message);
   revalidatePath(`/patients/${patientId}`);
+  revalidatePath(`/patients/${patientId}/present`);
 }
 
 export type KanbanAddInput =
@@ -159,14 +164,16 @@ interface ResolvedLineItem {
   surfaces: string[];
 }
 
-function adaCodeForSurfaceCondition(conditionId: ConditionId, surfaceCount: number): string {
+function adaCodeForSurfaceCondition(conditionId: ConditionId, surfaceCount: number, toothNumber: number): string {
   switch (conditionId) {
     case "filling":
-      return adaCodeForFilling(surfaceCount);
+      return adaCodeForFilling(surfaceCount, toothPosition(toothNumber));
     case "veneer":
       return adaCodeForVeneer();
-    case "inlay_onlay":
-      return adaCodeForInlayOnlay(surfaceCount);
+    case "inlay":
+      return adaCodeForInlay(surfaceCount);
+    case "onlay":
+      return adaCodeForOnlay(surfaceCount);
     default:
       throw new Error(`"${conditionId}" is not a surface condition.`);
   }
@@ -182,7 +189,7 @@ function adaCodeForSurfaceCondition(conditionId: ConditionId, surfaceCount: numb
 function requiredAdaCodes(input: KanbanAddInput): string[] {
   switch (input.kind) {
     case "surface":
-      return [adaCodeForSurfaceCondition(input.conditionId, input.surfaces.length)];
+      return [adaCodeForSurfaceCondition(input.conditionId, input.surfaces.length, input.toothNumber)];
     case "whole":
       return [adaCodeForWholeTooth(input.conditionId as WholeToothCondition)];
     case "overlay": {
@@ -220,7 +227,7 @@ async function drawProposedGraphic(patientId: string, input: KanbanAddInput): Pr
       const combo = surfaceComboLabel(input.surfaces, input.toothNumber);
       return [
         {
-          adaCode: adaCodeForSurfaceCondition(input.conditionId, input.surfaces.length),
+          adaCode: adaCodeForSurfaceCondition(input.conditionId, input.surfaces.length, input.toothNumber),
           chartKey: `${input.toothNumber}-${input.conditionId}`,
           toothNumber: input.toothNumber,
           surfaces: combo.split(""),
@@ -352,6 +359,7 @@ export async function addKanbanProcedure(
   });
 
   revalidatePath(`/patients/${patientId}`);
+  revalidatePath(`/patients/${patientId}/present`);
   return { planId: resolvedPlanId, items };
 }
 
@@ -415,6 +423,7 @@ export async function removeKanbanItem(patientId: string, itemId: string) {
     }
     await removeBridge(patientId, bridgeId);
     revalidatePath(`/patients/${patientId}`);
+    revalidatePath(`/patients/${patientId}/present`);
     return;
   }
 
@@ -427,6 +436,7 @@ export async function removeKanbanItem(patientId: string, itemId: string) {
   }
 
   revalidatePath(`/patients/${patientId}`);
+  revalidatePath(`/patients/${patientId}/present`);
 }
 
 /**
@@ -468,6 +478,7 @@ export async function archiveActivePlan(patientId: string, treatmentPlanId: stri
   if (error) throw new Error(error.message);
 
   revalidatePath(`/patients/${patientId}`);
+  revalidatePath(`/patients/${patientId}/present`);
 }
 
 export async function updatePlanAdjustment(patientId: string, treatmentPlanId: string, adjustment: number) {
