@@ -106,7 +106,7 @@ export function WorkspaceTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { setInfo } = useHeaderInfo();
+  const { setInfo, setIsSaving } = useHeaderInfo();
 
   const rawTab = searchParams.get("tab");
   const activeTab = rawTab && rawTab in TAB_LABEL ? rawTab : "chart";
@@ -142,6 +142,12 @@ export function WorkspaceTabs({
   const [isSavingBoard, startBoardSave] = useTransition();
   const [showExistingChart, setShowExistingChart] = useState(true);
   const [showProposedChart, setShowProposedChart] = useState(false);
+
+  // Mirrors the kanban board's save state into the sticky header's status dot.
+  useEffect(() => {
+    setIsSaving(isSavingBoard);
+    return () => setIsSaving(false);
+  }, [isSavingBoard, setIsSaving]);
 
   // Read via ref inside async callbacks so they can stay referentially
   // stable instead of re-subscribing every time planId resolves.
@@ -404,33 +410,32 @@ export function WorkspaceTabs({
               </CardContent>
             )}
           </Card>
-          <div className="flex justify-end">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button type="button" variant="outline" size="sm" disabled={!planId}>
-                  New plan
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Start a new plan?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    The current plan&apos;s proposed treatment will be cleared from the chart and moved
-                    to plan history.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleStartNewPlan}>Start new plan</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
           <VisitBoard
             patientId={patientId}
             items={boardItems}
             procedures={procedures}
-            isSaving={isSavingBoard}
+            newPlanButton={
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="outline" size="sm" disabled={!planId}>
+                    New plan
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Start a new plan?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      The current plan&apos;s proposed treatment will be cleared from the chart and moved
+                      to plan history.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleStartNewPlan}>Start new plan</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            }
             onAddManual={handleAddManual}
             onAddKanban={handleAddKanban}
             onRemove={handleRemove}

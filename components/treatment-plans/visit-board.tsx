@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { KanbanAddInput } from "@/app/actions/treatment-plan";
 import type { Procedure } from "@/lib/types";
 import { AddProcedureDialog } from "./add-procedure-dialog";
@@ -14,7 +13,8 @@ interface VisitBoardProps {
   patientId: string;
   items: BoardItem[];
   procedures: Procedure[];
-  isSaving: boolean;
+  /** The "New plan" confirmation dialog + trigger, owned by the parent (it needs plan/chart state). */
+  newPlanButton: React.ReactNode;
   onAddManual: (procedure: Procedure, toothNumber?: number) => void;
   onAddKanban: (input: KanbanAddInput) => void;
   onRemove: (itemId: string) => void;
@@ -26,7 +26,7 @@ export function VisitBoard({
   patientId,
   items,
   procedures,
-  isSaving,
+  newPlanButton,
   onAddManual,
   onAddKanban,
   onRemove,
@@ -40,33 +40,23 @@ export function VisitBoard({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <AddProcedureDialog procedures={procedures} onAddKanban={onAddKanban} onAddManual={onAddManual} />
-        </div>
-        <div className="flex items-center gap-3">
-          <Button size="sm" asChild>
-            <Link href={`/patients/${patientId}/present`}>Present to patient</Link>
-          </Button>
-          <span
-            role="status"
-            aria-label={isSaving ? "Saving" : "Saved"}
-            title={isSaving ? "Saving…" : "Saved"}
-            className={cn(
-              "size-2.5 rounded-full transition-colors",
-              isSaving ? "bg-muted-foreground/30" : "bg-green-500",
-            )}
-          />
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <AddProcedureDialog procedures={procedures} onAddKanban={onAddKanban} onAddManual={onAddManual} />
+        <Button size="sm" asChild>
+          <Link href={`/patients/${patientId}/present`}>Present to patient</Link>
+        </Button>
       </div>
 
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
           Drag a procedure into a visit to sequence it · click a card&apos;s fee to adjust it
         </p>
-        <Button variant="outline" size="sm" onClick={() => setVisitCount((c) => c + 1)}>
-          + Add visit
-        </Button>
+        <div className="flex items-center gap-2">
+          {newPlanButton}
+          <Button variant="outline" size="sm" onClick={() => setVisitCount((c) => c + 1)}>
+            + Add visit
+          </Button>
+        </div>
       </div>
 
       <div
