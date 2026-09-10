@@ -78,7 +78,10 @@ export function PatientList({ patients, acceptedPatientIds }: PatientListProps) 
                       {patient.email ? ` · ${patient.email}` : ""}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm text-muted-foreground">
+                      Added {new Date(patient.created_at).toLocaleDateString()}
+                    </p>
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/patients/${patient.id}`}>View</Link>
                     </Button>
@@ -106,6 +109,9 @@ export function PatientList({ patients, acceptedPatientIds }: PatientListProps) 
                         {patient.email ? ` · ${patient.email}` : ""}
                       </p>
                     </div>
+                    <p className="text-sm text-muted-foreground">
+                      Added {new Date(patient.created_at).toLocaleDateString()}
+                    </p>
                   </CardContent>
                 </Card>
               </Link>
