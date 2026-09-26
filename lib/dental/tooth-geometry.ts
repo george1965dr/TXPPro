@@ -56,29 +56,29 @@ export interface BridgeRangeTooth {
 }
 
 /**
- * Resolves a bridge's full teeth list (abutments at the two ends, pontics
- * in between) from its first and last tooth. `pierAbutments` marks any
- * interior teeth that are also abutments (e.g. a natural tooth or implant
- * between two pontics, as in a #2-#4-#6 bridge) rather than pontics.
- * Returns null for an invalid pair - the same tooth twice, or one spanning
- * both arches.
+ * Resolves a bridge's full teeth list from its first and last tooth: every
+ * tooth in the span is a pontic unless listed in `abutments`. Defaults to
+ * the two end teeth as abutments (the common case); pass an explicit list
+ * for anything else - pier abutments, or a cantilever where an end tooth
+ * hangs off as a pontic. Returns null for an invalid pair (the same tooth
+ * twice, or one spanning both arches) or when no tooth in the span is an
+ * abutment.
  */
 export function resolveBridgeRange(
   firstTooth: number,
   secondTooth: number,
-  pierAbutments: number[] = [],
+  abutments?: number[],
 ): BridgeRangeTooth[] | null {
   if (firstTooth === secondTooth || archOf(firstTooth) !== archOf(secondTooth)) return null;
 
   const start = Math.min(firstTooth, secondTooth);
   const end = Math.max(firstTooth, secondTooth);
-  const piers = new Set(pierAbutments);
+  const abutmentSet = new Set(abutments ?? [start, end]);
   const teeth: BridgeRangeTooth[] = [];
   for (let n = start; n <= end; n++) {
-    const isAbutment = n === start || n === end || piers.has(n);
-    teeth.push({ toothNumber: n, role: isAbutment ? "abutment" : "pontic" });
+    teeth.push({ toothNumber: n, role: abutmentSet.has(n) ? "abutment" : "pontic" });
   }
-  return teeth;
+  return teeth.some((t) => t.role === "abutment") ? teeth : null;
 }
 
 export type ToothPosition = "anterior" | "premolar" | "molar";

@@ -21,7 +21,8 @@ interface PendingBridge {
   first: number;
   last: number;
   bridgeType: BridgeType;
-  pierAbutments: number[];
+  /** Teeth in the span that are abutments - everything else is a pontic. */
+  abutments: number[];
 }
 
 interface OdontogramProps {
@@ -57,8 +58,8 @@ export function Odontogram({
 
   const conditionDef = CONDITIONS.find((c) => c.id === condition)!;
   const toothToBridge = useMemo(() => buildToothToBridge(bridges, view), [bridges, view]);
-  const pendingBridgeInteriorTeeth = pendingBridge
-    ? Array.from({ length: pendingBridge.last - pendingBridge.first - 1 }, (_, i) => pendingBridge.first + 1 + i)
+  const pendingBridgeTeeth = pendingBridge
+    ? Array.from({ length: pendingBridge.last - pendingBridge.first + 1 }, (_, i) => pendingBridge.first + i)
     : [];
 
   function selectCondition(next: ConditionId) {
@@ -174,19 +175,17 @@ export function Odontogram({
       first: Math.min(bridgeFirstTooth, toothNumber),
       last: Math.max(bridgeFirstTooth, toothNumber),
       bridgeType: condition === "implant_bridge" ? "implant" : "tooth",
-      pierAbutments: [],
+      abutments: [Math.min(bridgeFirstTooth, toothNumber), Math.max(bridgeFirstTooth, toothNumber)],
     });
   }
 
-  function togglePierAbutment(toothNumber: number) {
+  function toggleAbutment(toothNumber: number) {
     setPendingBridge((prev) => {
       if (!prev) return prev;
-      const has = prev.pierAbutments.includes(toothNumber);
+      const has = prev.abutments.includes(toothNumber);
       return {
         ...prev,
-        pierAbutments: has
-          ? prev.pierAbutments.filter((t) => t !== toothNumber)
-          : [...prev.pierAbutments, toothNumber],
+        abutments: has ? prev.abutments.filter((t) => t !== toothNumber) : [...prev.abutments, toothNumber],
       };
     });
   }
@@ -197,7 +196,8 @@ export function Odontogram({
 
   function confirmPendingBridge() {
     if (!pendingBridge) return;
-    const teeth = resolveBridgeRange(pendingBridge.first, pendingBridge.last, pendingBridge.pierAbutments)!;
+    const teeth = resolveBridgeRange(pendingBridge.first, pendingBridge.last, pendingBridge.abutments);
+    if (!teeth) return;
     const bridgeType = pendingBridge.bridgeType;
     setPendingBridge(null);
 
@@ -304,33 +304,36 @@ export function Odontogram({
           <p className="text-sm font-medium">
             Bridge #{pendingBridge.first}-#{pendingBridge.last}
           </p>
-          {pendingBridgeInteriorTeeth.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-xs text-muted-foreground">
-                Teeth in between are pontics by default - click any that are also abutments (a pier
-                abutment).
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {pendingBridgeInteriorTeeth.map((tooth) => (
-                  <button
-                    key={tooth}
-                    type="button"
-                    onClick={() => togglePierAbutment(tooth)}
-                    className={cn(
-                      "rounded-md border px-2.5 py-1 text-sm",
-                      pendingBridge.pierAbutments.includes(tooth)
-                        ? "border-foreground/40 bg-accent font-medium"
-                        : "border-border text-muted-foreground hover:bg-accent/50",
-                    )}
-                  >
-                    #{tooth}
-                  </button>
-                ))}
-              </div>
+          <div className="flex flex-col gap-1.5">
+            <p className="text-xs text-muted-foreground">
+              Select every tooth that is an abutment - all other teeth in the span are pontics.
+              Both ends start selected; deselect an end for a cantilever.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {pendingBridgeTeeth.map((tooth) => (
+                <button
+                  key={tooth}
+                  type="button"
+                  onClick={() => toggleAbutment(tooth)}
+                  className={cn(
+                    "rounded-md border px-2.5 py-1 text-sm",
+                    pendingBridge.abutments.includes(tooth)
+                      ? "border-foreground/40 bg-accent font-medium"
+                      : "border-border text-muted-foreground hover:bg-accent/50",
+                  )}
+                >
+                  #{tooth}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
           <div className="flex gap-2">
-            <Button type="button" size="sm" onClick={confirmPendingBridge}>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!resolveBridgeRange(pendingBridge.first, pendingBridge.last, pendingBridge.abutments)}
+              onClick={confirmPendingBridge}
+            >
               Confirm bridge
             </Button>
             <Button type="button" size="sm" variant="outline" onClick={cancelPendingBridge}>

@@ -45,7 +45,9 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
   const [toothNumber, setToothNumber] = useState("");
   const [secondToothNumber, setSecondToothNumber] = useState("");
   const [surfaces, setSurfaces] = useState<ToothSurface[]>([]);
-  const [pierAbutments, setPierAbutments] = useState<number[]>([]);
+  // null = untouched: both end teeth are abutments (the common case). Any
+  // toggle switches to an explicit list, and editing either end resets it.
+  const [abutmentOverride, setAbutmentOverride] = useState<number[] | null>(null);
 
   const sorted = useMemo(
     () => [...procedures].sort((a, b) => a.ada_code.localeCompare(b.ada_code)),
@@ -66,7 +68,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
     setToothNumber("");
     setSecondToothNumber("");
     setSurfaces([]);
-    setPierAbutments([]);
+    setAbutmentOverride(null);
   }
 
   function pickProcedure(p: Procedure) {
@@ -81,12 +83,13 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
     setToothNumber("");
     setSecondToothNumber("");
     setSurfaces([]);
-    setPierAbutments([]);
+    setAbutmentOverride(null);
   }
 
-  function togglePierAbutment(toothNumber: number) {
-    setPierAbutments((prev) =>
-      prev.includes(toothNumber) ? prev.filter((t) => t !== toothNumber) : [...prev, toothNumber],
+  function toggleAbutment(toothNumber: number) {
+    const base = abutmentOverride ?? bridgeEndTeeth;
+    setAbutmentOverride(
+      base.includes(toothNumber) ? base.filter((t) => t !== toothNumber) : [...base, toothNumber],
     );
   }
 
@@ -125,13 +128,16 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
     entry?.toothMode === "bridge" && parsedTooth !== null && parsedSecondTooth !== null
       ? resolveBridgeRange(parsedTooth, parsedSecondTooth)
       : null;
-  const bridgeInteriorTeeth = bridgeSpanPreview ? bridgeSpanPreview.slice(1, -1).map((t) => t.toothNumber) : [];
-  const activePierAbutments = pierAbutments.filter((t) => bridgeInteriorTeeth.includes(t));
+  const bridgeSpanTeeth = bridgeSpanPreview ? bridgeSpanPreview.map((t) => t.toothNumber) : [];
+  const bridgeEndTeeth = bridgeSpanTeeth.length > 0 ? [bridgeSpanTeeth[0], bridgeSpanTeeth[bridgeSpanTeeth.length - 1]] : [];
+  const activeAbutments = (abutmentOverride ?? bridgeEndTeeth).filter((t) => bridgeSpanTeeth.includes(t));
 
   const bridgeTeeth =
-    entry?.toothMode === "bridge" && parsedTooth !== null
-      ? resolveBridgeRange(parsedTooth, parsedSecondTooth ?? -1, activePierAbutments)
+    entry?.toothMode === "bridge" && parsedTooth !== null && parsedSecondTooth !== null
+      ? resolveBridgeRange(parsedTooth, parsedSecondTooth, activeAbutments)
       : null;
+  const noAbutmentError =
+    bridgeSpanPreview && bridgeTeeth === null ? "Pick at least one abutment." : null;
 
   const canSubmit = !selected
     ? false
@@ -231,7 +237,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
             {entry?.toothMode === "bridge" ? (
               <div className="flex items-end gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="tooth1">First abutment</Label>
+                  <Label htmlFor="tooth1">First tooth</Label>
                   <Input
                     id="tooth1"
                     autoFocus
@@ -239,19 +245,25 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
                     min={1}
                     max={32}
                     value={toothNumber}
-                    onChange={(e) => setToothNumber(e.target.value)}
+                    onChange={(e) => {
+                      setToothNumber(e.target.value);
+                      setAbutmentOverride(null);
+                    }}
                     className="w-24"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="tooth2">Last abutment</Label>
+                  <Label htmlFor="tooth2">Last tooth</Label>
                   <Input
                     id="tooth2"
                     type="number"
                     min={1}
                     max={32}
                     value={secondToothNumber}
-                    onChange={(e) => setSecondToothNumber(e.target.value)}
+                    onChange={(e) => {
+                      setSecondToothNumber(e.target.value);
+                      setAbutmentOverride(null);
+                    }}
                     className="w-24"
                   />
                 </div>
@@ -273,22 +285,22 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
               </div>
             )}
 
-            {entry?.toothMode === "bridge" && bridgeInteriorTeeth.length > 0 && (
+            {entry?.toothMode === "bridge" && bridgeSpanTeeth.length > 0 && (
               <div className="flex flex-col gap-1.5">
-                <Label>Pier abutments (optional)</Label>
+                <Label>Abutments</Label>
                 <p className="text-xs text-muted-foreground">
-                  Teeth between the two ends are pontics by default - toggle any that are also
-                  abutments (e.g. a natural tooth or implant in the middle of the span).
+                  Select every tooth that is an abutment - all other teeth in the span are pontics.
+                  Both ends start selected; deselect an end for a cantilever.
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {bridgeInteriorTeeth.map((tooth) => (
+                  {bridgeSpanTeeth.map((tooth) => (
                     <button
                       key={tooth}
                       type="button"
-                      onClick={() => togglePierAbutment(tooth)}
+                      onClick={() => toggleAbutment(tooth)}
                       className={cn(
                         "rounded-md border px-2.5 py-1 text-sm",
-                        activePierAbutments.includes(tooth)
+                        activeAbutments.includes(tooth)
                           ? "border-foreground/40 bg-accent font-medium"
                           : "border-border text-muted-foreground hover:bg-accent/50",
                       )}
@@ -297,6 +309,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
                     </button>
                   ))}
                 </div>
+                {noAbutmentError && <p className="text-xs text-destructive">{noAbutmentError}</p>}
               </div>
             )}
 
