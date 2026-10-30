@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppHeader } from "@/components/app-header";
 import { AppRail } from "@/components/app-rail";
+import { ShellFrame } from "@/components/shell-frame";
 import { HeaderProvider } from "@/components/header-context";
 import { SaveStatusProvider } from "@/components/save-status";
 import { createClient } from "@/lib/supabase/server";
@@ -59,10 +60,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                   {watermark}
                 </div>
                 <AppRail practiceName={practiceName} practiceAddress={practiceAddress} />
-                <div className="relative z-10 flex flex-1 flex-col pb-24 md:pb-0 md:pl-24 print:pl-0 print:pb-0">
+                <ShellFrame>
                   <AppHeader practiceName={practiceName} />
                   {children}
-                </div>
+                </ShellFrame>
               </SaveStatusProvider>
             </HeaderProvider>
           </TooltipProvider>

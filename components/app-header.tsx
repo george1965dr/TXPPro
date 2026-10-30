@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useHeaderInfo } from "@/components/header-context";
 import { SaveStatusIndicator } from "@/components/save-status";
+import { useIsAuthScreen } from "@/components/shell-frame";
 
 interface AppHeaderProps {
   practiceName: string;
@@ -12,6 +13,9 @@ interface AppHeaderProps {
 // full-strength foreground text, so nothing in this strip uses muted-foreground.
 export function AppHeader({ practiceName }: AppHeaderProps) {
   const { info } = useHeaderInfo();
+  const onAuthScreen = useIsAuthScreen();
+
+  if (onAuthScreen) return null;
 
   return (
     <header className="sticky top-0 z-10 bg-background/40 backdrop-blur-xl md:-ml-24 md:pl-24 print:hidden">

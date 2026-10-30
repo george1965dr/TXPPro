@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ListChecks, Users } from "lucide-react";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useIsAuthScreen } from "@/components/shell-frame";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -22,6 +23,9 @@ interface AppRailProps {
 
 export function AppRail({ practiceName, practiceAddress }: AppRailProps) {
   const pathname = usePathname();
+  const onAuthScreen = useIsAuthScreen();
+
+  if (onAuthScreen) return null;
 
   return (
     <nav
