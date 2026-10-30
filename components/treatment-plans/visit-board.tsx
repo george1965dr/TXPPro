@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { KanbanAddInput } from "@/app/actions/treatment-plan";
 import type { Procedure } from "@/lib/types";
@@ -42,14 +43,26 @@ export function VisitBoard({
 
   const grandTotal = items.reduce((sum, item) => sum + item.fee, 0);
   const visitNumbers = Array.from({ length: visitCount }, (_, i) => i + 1);
+  const unscheduledCount = items.filter((item) => item.appointmentNumber === null).length;
 
   return (
     <div className="panel flex flex-col gap-4 p-6">
       <div className="flex flex-wrap items-center gap-2">
         <AddProcedureDialog procedures={procedures} onAddKanban={onAddKanban} onAddManual={onAddManual} />
         <Button variant="outline" className="h-10 rounded-full px-4" asChild>
-          <Link href={`/patients/${patientId}/present`}>Print plan</Link>
+          <Link href={`/patients/${patientId}/present`}>Review plan</Link>
         </Button>
+        {items.length > 0 &&
+          (unscheduledCount > 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {unscheduledCount} {unscheduledCount === 1 ? "procedure" : "procedures"} still unscheduled
+            </p>
+          ) : (
+            <p className="flex items-center gap-1.5 text-sm font-medium text-success">
+              <Check className="size-4" aria-hidden />
+              All scheduled · ready to review and accept
+            </p>
+          ))}
       </div>
 
       <div className="flex items-center justify-between">

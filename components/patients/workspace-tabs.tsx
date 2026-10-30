@@ -142,7 +142,7 @@ export function WorkspaceTabs({
   const [chartBridges, setChartBridges] = useState<BridgeInfo[]>(() => buildBridgeInfos(bridges, bridgeTeeth));
 
   const [, startBoardSave] = useTransition();
-  const [showExistingChart, setShowExistingChart] = useState(true);
+  const [showExistingChart, setShowExistingChart] = useState(false);
   const [showProposedChart, setShowProposedChart] = useState(false);
 
   // Read via ref inside async callbacks so they can stay referentially
@@ -427,6 +427,40 @@ export function WorkspaceTabs({
       </TabsContent>
       <TabsContent value="sequence" className="pt-4">
         <div className="flex flex-col gap-4">
+          <VisitBoard
+            patientId={patientId}
+            items={visibleBoardItems}
+            procedures={procedures}
+            newPlanButton={
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="outline" className="h-10 rounded-full px-4" disabled={!planId}>
+                    New plan
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Start a new plan?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      The current plan&apos;s proposed treatment will be cleared from the chart and moved
+                      to plan history.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleStartNewPlan}>Start new plan</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            }
+            onAddManual={handleAddManual}
+            onAddKanban={handleAddKanban}
+            onRemove={handleRemove}
+            onMove={handleMove}
+            onFeeChange={handleFeeChange}
+            pendingRemovals={pendingRemovals}
+            onUndoRemove={handleUndoRemove}
+          />
           <Card>
             <CardHeader>
               <CardTitle>Proposed treatment</CardTitle>
@@ -478,40 +512,6 @@ export function WorkspaceTabs({
               </CardContent>
             )}
           </Card>
-          <VisitBoard
-            patientId={patientId}
-            items={visibleBoardItems}
-            procedures={procedures}
-            newPlanButton={
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="outline" className="h-10 rounded-full px-4" disabled={!planId}>
-                    New plan
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Start a new plan?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      The current plan&apos;s proposed treatment will be cleared from the chart and moved
-                      to plan history.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleStartNewPlan}>Start new plan</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            }
-            onAddManual={handleAddManual}
-            onAddKanban={handleAddKanban}
-            onRemove={handleRemove}
-            onMove={handleMove}
-            onFeeChange={handleFeeChange}
-            pendingRemovals={pendingRemovals}
-            onUndoRemove={handleUndoRemove}
-          />
           <PlanHistory plans={planHistory} />
         </div>
       </TabsContent>

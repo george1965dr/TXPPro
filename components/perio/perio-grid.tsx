@@ -29,7 +29,7 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
     buildMeasurementState(initialMeasurements),
   );
   const [statuses, setStatuses] = useState<PerioStatusState>(() => buildStatusState(initialStatuses));
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const { track } = useSaveTracker();
 
   function handlePdOrRecChange(
@@ -72,18 +72,23 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
     });
   }
 
-  const { deepSites, bleedingSites } = useMemo(() => {
+  const { deepSites, bleedingSites, measuredSites } = useMemo(() => {
     let deep = 0;
     let bleeding = 0;
+    let measured = 0;
     for (const tooth of ALL_TEETH) {
       for (const site of ALL_SITES) {
         const v = siteValues(measurements, tooth, site);
         if (v.probing_depth >= 4) deep++;
         if (v.bleeding_on_probing) bleeding++;
+        // A real pocket is never 0 mm, so 0 means nobody has measured this site.
+        if (v.probing_depth > 0 || v.bleeding_on_probing) measured++;
       }
     }
-    return { deepSites: deep, bleedingSites: bleeding };
+    return { deepSites: deep, bleedingSites: bleeding, measuredSites: measured };
   }, [measurements]);
+
+  const totalSites = ALL_TEETH.length * ALL_SITES.length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -93,13 +98,15 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
             <AlertTriangle className="size-3.5" />
             {deepSites} site{deepSites === 1 ? "" : "s"} ≥ 4mm · {bleedingSites} bleeding on probing
           </div>
+        ) : measuredSites === 0 ? (
+          // Empty is not healthy: never reassure about a chart nobody has measured.
+          <p className="text-sm text-muted-foreground">No perio recorded yet</p>
         ) : (
           <div className="flex items-center gap-1.5 text-sm text-success">
-            <Check className="size-3.5" />
-            All sites within normal limits
+            <Check className="size-3.5" aria-hidden />
+            No sites ≥ 4mm or bleeding · {measuredSites} of {totalSites} sites measured
           </div>
         )}
-        <span className="text-xs text-muted-foreground">{isPending ? "Saving…" : "Saved"}</span>
       </div>
 
       <p className="text-xs text-muted-foreground">
