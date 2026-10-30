@@ -1,5 +1,6 @@
 "use client";
 
+import { useSaveTracker } from "@/components/save-status";
 import { useRef, useState, useTransition } from "react";
 import { FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,18 +21,17 @@ export function MediaGallery({ patientId, initialItems }: MediaGalleryProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [, startTransition] = useTransition();
+  const { track } = useSaveTracker();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleFiles(files: FileList) {
     setIsUploading(true);
     for (const file of Array.from(files)) {
-      try {
+      await track(`Upload ${file.name}`, async () => {
         const uploaded = await uploadMediaFile(patientId, file);
         const row = await addPatientMedia(patientId, uploaded.type, uploaded.storagePath, uploaded.durationSeconds);
         setItems((prev) => [newMediaItem(row.id, uploaded.type, uploaded.storagePath, uploaded.durationSeconds, uploaded.objectUrl), ...prev]);
-      } catch (err) {
-        console.error("Failed to upload media file", err);
-      }
+      });
     }
     setIsUploading(false);
   }
@@ -42,7 +42,7 @@ export function MediaGallery({ patientId, initialItems }: MediaGalleryProps) {
     setItems((prev) => prev.filter((item) => item.id !== mediaId));
     setExpandedId(null);
     startTransition(async () => {
-      await deletePatientMedia(patientId, mediaId, target.storagePath);
+      await track("Delete photo", () => deletePatientMedia(patientId, mediaId, target.storagePath));
     });
   }
 

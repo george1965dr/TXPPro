@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppHeader } from "@/components/app-header";
 import { HeaderProvider } from "@/components/header-context";
+import { SaveStatusProvider } from "@/components/save-status";
 import { createClient } from "@/lib/supabase/server";
 import type { PracticeSettings } from "@/lib/types";
 import "./globals.css";
@@ -38,11 +39,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
             <HeaderProvider>
-              <AppHeader
-                initialPracticeName={practiceSettings?.name ?? ""}
-                initialPracticeAddress={practiceSettings?.address ?? ""}
-              />
-              {children}
+              <SaveStatusProvider>
+                <AppHeader
+                  initialPracticeName={practiceSettings?.name ?? ""}
+                  initialPracticeAddress={practiceSettings?.address ?? ""}
+                />
+                {children}
+              </SaveStatusProvider>
             </HeaderProvider>
           </TooltipProvider>
         </ThemeProvider>

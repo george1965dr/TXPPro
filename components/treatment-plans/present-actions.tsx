@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Printer, Check, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { setPlanAccepted } from "@/app/actions/treatment-plan";
+import { useSaveTracker } from "@/components/save-status";
 
 interface PresentActionsProps {
   patientId: string;
@@ -15,6 +16,7 @@ interface PresentActionsProps {
 
 export function PresentActions({ patientId, treatmentPlanId, accepted, hasUnscheduled }: PresentActionsProps) {
   const [isPending, startTransition] = useTransition();
+  const { track } = useSaveTracker();
 
   return (
     <div className="flex flex-col items-end gap-1 print:hidden">
@@ -28,7 +30,7 @@ export function PresentActions({ patientId, treatmentPlanId, accepted, hasUnsche
             variant="outline"
             size="sm"
             disabled={isPending}
-            onClick={() => startTransition(() => setPlanAccepted(patientId, treatmentPlanId, false))}
+            onClick={() => startTransition(async () => { await track("Revert plan to draft", () => setPlanAccepted(patientId, treatmentPlanId, false)); })}
           >
             <Undo2 className="size-4" />
             Revert to draft
@@ -38,7 +40,7 @@ export function PresentActions({ patientId, treatmentPlanId, accepted, hasUnsche
             size="sm"
             className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
             disabled={isPending || hasUnscheduled}
-            onClick={() => startTransition(() => setPlanAccepted(patientId, treatmentPlanId, true))}
+            onClick={() => startTransition(async () => { await track("Accept plan", () => setPlanAccepted(patientId, treatmentPlanId, true)); })}
           >
             <Check className="size-4" />
             Mark as accepted

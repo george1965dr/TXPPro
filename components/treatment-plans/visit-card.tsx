@@ -7,11 +7,13 @@ import type { BoardItem } from "./board-state";
 
 interface VisitCardProps {
   item: BoardItem;
+  visitCount: number;
+  onMove: (appointmentNumber: number | null) => void;
   onRemove: () => void;
   onFeeChange: (fee: number) => void;
 }
 
-export function VisitCard({ item, onRemove, onFeeChange }: VisitCardProps) {
+export function VisitCard({ item, visitCount, onMove, onRemove, onFeeChange }: VisitCardProps) {
   const [editingFee, setEditingFee] = useState(false);
   const [feeDraft, setFeeDraft] = useState(String(item.fee));
   // Not yet synced to a real row - dragging it would schedule an id the
@@ -38,13 +40,13 @@ export function VisitCard({ item, onRemove, onFeeChange }: VisitCardProps) {
     >
       <button
         type="button"
-        aria-label="Remove"
+        aria-label={`Remove ${item.adaCode}${item.toothNumber !== null ? ` tooth ${item.toothNumber}` : ""}`}
         onClick={onRemove}
-        className="absolute top-1 right-1 text-muted-foreground hover:text-foreground"
+        className="absolute top-0 right-0 flex size-7 items-center justify-center rounded-md text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
       >
-        <X className="size-3" />
+        <X className="size-3.5" />
       </button>
-      <p className="pr-3 font-medium">{item.adaCode}</p>
+      <p className="pr-6 font-medium">{item.adaCode}</p>
       {item.toothNumber !== null && (
         <p className="text-xs font-medium text-primary">
           Tooth #{item.toothNumber}
@@ -52,6 +54,21 @@ export function VisitCard({ item, onRemove, onFeeChange }: VisitCardProps) {
         </p>
       )}
       <p className="mb-1 text-xs text-muted-foreground">{item.description}</p>
+      <div className="flex items-center gap-1">
+        <select
+          aria-label={`Move ${item.adaCode}${item.toothNumber !== null ? ` tooth ${item.toothNumber}` : ""} to visit`}
+          value={item.appointmentNumber ?? ""}
+          onChange={(e) => onMove(e.target.value === "" ? null : Number(e.target.value))}
+          disabled={isPending}
+          className="h-6 min-w-0 flex-1 rounded border border-transparent bg-transparent px-0.5 text-xs text-muted-foreground outline-none hover:border-border focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          <option value="">Unscheduled</option>
+          {Array.from({ length: visitCount }, (_, i) => i + 1).map((n) => (
+            <option key={n} value={n}>
+              Visit {n}
+            </option>
+          ))}
+        </select>
       {editingFee ? (
         <Input
           autoFocus
@@ -68,7 +85,7 @@ export function VisitCard({ item, onRemove, onFeeChange }: VisitCardProps) {
               setEditingFee(false);
             }
           }}
-          className="ml-auto h-6 w-24 text-right text-xs"
+          className="h-6 w-24 shrink-0 text-right text-xs"
         />
       ) : (
         <button
@@ -77,12 +94,13 @@ export function VisitCard({ item, onRemove, onFeeChange }: VisitCardProps) {
             setFeeDraft(String(item.fee));
             setEditingFee(true);
           }}
-          className="w-full text-right text-xs text-muted-foreground hover:text-foreground"
+          className="shrink-0 rounded px-1 text-right text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
           title="Click to edit fee"
         >
           ${item.fee.toLocaleString()}
         </button>
       )}
+      </div>
     </div>
   );
 }

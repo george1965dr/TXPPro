@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { useHeaderInfo } from "@/components/header-context";
-import { cn } from "@/lib/utils";
+import { SaveStatusIndicator } from "@/components/save-status";
 
 interface AppHeaderProps {
   initialPracticeName: string;
@@ -12,7 +12,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ initialPracticeName, initialPracticeAddress }: AppHeaderProps) {
-  const { info, isSaving } = useHeaderInfo();
+  const { info } = useHeaderInfo();
 
   return (
     <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 print:hidden">
@@ -42,17 +42,7 @@ export function AppHeader({ initialPracticeName, initialPracticeAddress }: AppHe
           )}
         </div>
         <div className="flex items-center gap-3">
-          {info && (
-            <span
-              role="status"
-              aria-label={isSaving ? "Saving" : "Saved"}
-              title={isSaving ? "Saving…" : "Saved"}
-              className={cn(
-                "size-2.5 rounded-full transition-colors",
-                isSaving ? "bg-muted-foreground/30" : "bg-green-500",
-              )}
-            />
-          )}
+          <SaveStatusIndicator showWhenIdle={!!info} />
           <div className="flex items-center gap-1">
             <SettingsDialog
               initialPracticeName={initialPracticeName}

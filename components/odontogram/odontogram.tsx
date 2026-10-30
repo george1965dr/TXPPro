@@ -1,5 +1,6 @@
 "use client";
 
+import { useSaveTracker } from "@/components/save-status";
 import { useMemo, useState, useTransition } from "react";
 import { createBridge, removeBridge, setToothCondition, setToothOverlay } from "@/app/actions/chart";
 import { CONDITIONS, type ConditionId } from "@/lib/dental/conditions";
@@ -54,6 +55,7 @@ export function Odontogram({
   const [view, setView] = useState<ChartLayer>("existing");
   const [condition, setCondition] = useState<ConditionId>("filling");
   const [isPending, startTransition] = useTransition();
+  const { track } = useSaveTracker();
   const editable = view === "existing";
 
   const conditionDef = CONDITIONS.find((c) => c.id === condition)!;
@@ -84,7 +86,7 @@ export function Odontogram({
       return { ...prev, [toothNumber]: nextTooth };
     });
     startTransition(async () => {
-      await setToothCondition(patientId, toothNumber, target, "existing", null);
+      await track(`Clear tooth #${toothNumber}`, () => setToothCondition(patientId, toothNumber, target, "existing", null));
     });
   }
 
@@ -104,7 +106,7 @@ export function Odontogram({
       return { ...prev, [toothNumber]: nextTooth };
     });
     startTransition(async () => {
-      await setToothCondition(patientId, toothNumber, target, "existing", condition);
+      await track(`Chart tooth #${toothNumber}`, () => setToothCondition(patientId, toothNumber, target, "existing", condition));
     });
   }
 
@@ -120,7 +122,7 @@ export function Odontogram({
     });
 
     startTransition(async () => {
-      await setToothOverlay(patientId, toothNumber, "existing", overlayType, nextPresent);
+      await track(`Chart tooth #${toothNumber}`, () => setToothOverlay(patientId, toothNumber, "existing", overlayType, nextPresent));
     });
   }
 
@@ -132,7 +134,7 @@ export function Odontogram({
     });
 
     startTransition(async () => {
-      await setToothOverlay(patientId, toothNumber, "existing", overlayType, false);
+      await track(`Clear tooth #${toothNumber}`, () => setToothOverlay(patientId, toothNumber, "existing", overlayType, false));
     });
   }
 
@@ -152,7 +154,7 @@ export function Odontogram({
   function removeBridgeLocal(bridgeId: string) {
     onBridgesChange((prev) => prev.filter((b) => b.id !== bridgeId));
     startTransition(async () => {
-      await removeBridge(patientId, bridgeId);
+      await track("Remove bridge", () => removeBridge(patientId, bridgeId));
     });
   }
 
@@ -205,8 +207,10 @@ export function Odontogram({
     onBridgesChange((prev) => [...prev, { id: tempId, layer: "existing", bridgeType, teeth }]);
 
     startTransition(async () => {
-      const { bridgeId } = await createBridge(patientId, "existing", bridgeType, teeth);
-      onBridgesChange((prev) => prev.map((b) => (b.id === tempId ? { ...b, id: bridgeId } : b)));
+      await track("Save bridge", async () => {
+        const { bridgeId } = await createBridge(patientId, "existing", bridgeType, teeth);
+        onBridgesChange((prev) => prev.map((b) => (b.id === tempId ? { ...b, id: bridgeId } : b)));
+      });
     });
   }
 

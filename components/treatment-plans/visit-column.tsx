@@ -8,12 +8,22 @@ import type { BoardItem } from "./board-state";
 interface VisitColumnProps {
   label: string;
   items: BoardItem[];
+  visitCount: number;
   onDropItem: (itemId: string) => void;
+  onMoveItem: (itemId: string, appointmentNumber: number | null) => void;
   onRemoveItem: (itemId: string) => void;
   onFeeChange: (itemId: string, fee: number) => void;
 }
 
-export function VisitColumn({ label, items, onDropItem, onRemoveItem, onFeeChange }: VisitColumnProps) {
+export function VisitColumn({
+  label,
+  items,
+  visitCount,
+  onDropItem,
+  onMoveItem,
+  onRemoveItem,
+  onFeeChange,
+}: VisitColumnProps) {
   const [isOver, setIsOver] = useState(false);
   const subtotal = items.reduce((sum, item) => sum + item.fee, 0);
 
@@ -41,6 +51,8 @@ export function VisitColumn({ label, items, onDropItem, onRemoveItem, onFeeChang
           <VisitCard
             key={item.id}
             item={item}
+            visitCount={visitCount}
+            onMove={(n) => onMoveItem(item.id, n)}
             onRemove={() => onRemoveItem(item.id)}
             onFeeChange={(fee) => onFeeChange(item.id, fee)}
           />

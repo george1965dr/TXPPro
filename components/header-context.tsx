@@ -10,9 +10,6 @@ export interface HeaderInfo {
 interface HeaderContextValue {
   info: HeaderInfo | null;
   setInfo: (info: HeaderInfo | null) => void;
-  /** Mirrors the workspace's kanban-board save state into the header's status dot. */
-  isSaving: boolean;
-  setIsSaving: (saving: boolean) => void;
 }
 
 const HeaderContext = createContext<HeaderContextValue | null>(null);
@@ -26,8 +23,7 @@ const HeaderContext = createContext<HeaderContextValue | null>(null);
  */
 export function HeaderProvider({ children }: { children: ReactNode }) {
   const [info, setInfo] = useState<HeaderInfo | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const value = useMemo(() => ({ info, setInfo, isSaving, setIsSaving }), [info, isSaving]);
+  const value = useMemo(() => ({ info, setInfo }), [info]);
   return <HeaderContext.Provider value={value}>{children}</HeaderContext.Provider>;
 }
 

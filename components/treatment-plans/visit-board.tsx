@@ -20,6 +20,9 @@ interface VisitBoardProps {
   onRemove: (itemId: string) => void;
   onMove: (itemId: string, appointmentNumber: number | null) => void;
   onFeeChange: (itemId: string, fee: number) => void;
+  /** Removals still inside their undo window (the item is already hidden from `items`). */
+  pendingRemovals: { key: string; label: string }[];
+  onUndoRemove: (key: string) => void;
 }
 
 export function VisitBoard({
@@ -32,6 +35,8 @@ export function VisitBoard({
   onRemove,
   onMove,
   onFeeChange,
+  pendingRemovals,
+  onUndoRemove,
 }: VisitBoardProps) {
   const [visitCount, setVisitCount] = useState(() => initialVisitCount(items));
 
@@ -49,7 +54,7 @@ export function VisitBoard({
 
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          Drag a procedure into a visit to sequence it · click a card&apos;s fee to adjust it
+          Drag a procedure into a visit, or use its visit menu · click a card&apos;s fee to adjust it
         </p>
         <div className="flex items-center gap-2">
           {newPlanButton}
@@ -66,7 +71,9 @@ export function VisitBoard({
         <VisitColumn
           label="Unscheduled"
           items={items.filter((item) => item.appointmentNumber === null)}
+          visitCount={visitCount}
           onDropItem={(itemId) => onMove(itemId, null)}
+          onMoveItem={onMove}
           onRemoveItem={onRemove}
           onFeeChange={onFeeChange}
         />
@@ -75,7 +82,9 @@ export function VisitBoard({
             key={n}
             label={`Visit ${n}`}
             items={items.filter((item) => item.appointmentNumber === n)}
+            visitCount={visitCount}
             onDropItem={(itemId) => onMove(itemId, n)}
+            onMoveItem={onMove}
             onRemoveItem={onRemove}
             onFeeChange={onFeeChange}
           />
@@ -88,6 +97,26 @@ export function VisitBoard({
         </p>
         <p className="text-base font-medium">Plan total: ${grandTotal.toLocaleString()}</p>
       </div>
+
+      {pendingRemovals.length > 0 && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-4 left-1/2 z-20 flex -translate-x-1/2 flex-col gap-2 print:hidden"
+        >
+          {pendingRemovals.map((removal) => (
+            <div
+              key={removal.key}
+              className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2 text-sm shadow-lg"
+            >
+              <span>Removed {removal.label}</span>
+              <Button type="button" size="sm" variant="outline" onClick={() => onUndoRemove(removal.key)}>
+                Undo
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

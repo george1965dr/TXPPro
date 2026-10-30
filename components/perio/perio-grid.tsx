@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { AlertTriangle, Check } from "lucide-react";
+import { useSaveTracker } from "@/components/save-status";
 import { setPerioSite, setToothPerioStatus } from "@/app/actions/perio";
 import { ALL_SITES } from "@/lib/dental/perio";
 import { UPPER_ARCH, LOWER_ARCH } from "@/lib/dental/tooth-geometry";
@@ -29,6 +30,7 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
   );
   const [statuses, setStatuses] = useState<PerioStatusState>(() => buildStatusState(initialStatuses));
   const [isPending, startTransition] = useTransition();
+  const { track } = useSaveTracker();
 
   function handlePdOrRecChange(
     tooth: number,
@@ -41,7 +43,7 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
       return { ...prev, [tooth]: { ...prev[tooth], [site]: { ...current, [field]: value } } };
     });
     startTransition(async () => {
-      await setPerioSite(patientId, tooth, site, field, value);
+      await track(`Perio tooth #${tooth}`, () => setPerioSite(patientId, tooth, site, field, value));
     });
   }
 
@@ -53,7 +55,7 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
       [tooth]: { ...prev[tooth], [site]: { ...current, bleeding_on_probing: next } },
     }));
     startTransition(async () => {
-      await setPerioSite(patientId, tooth, site, "bleeding_on_probing", next);
+      await track(`Perio tooth #${tooth}`, () => setPerioSite(patientId, tooth, site, "bleeding_on_probing", next));
     });
   }
 
@@ -66,7 +68,7 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
       },
     }));
     startTransition(async () => {
-      await setToothPerioStatus(patientId, tooth, field, value);
+      await track(`Perio tooth #${tooth}`, () => setToothPerioStatus(patientId, tooth, field, value));
     });
   }
 

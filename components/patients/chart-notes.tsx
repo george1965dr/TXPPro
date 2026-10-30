@@ -4,16 +4,21 @@ import { useRef, useState, useTransition } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { updateChartNotes } from "@/app/actions/patients";
+import { useSaveTracker } from "@/components/save-status";
 
 export function ChartNotes({ patientId, initialNotes }: { patientId: string; initialNotes: string }) {
   const [notes, setNotes] = useState(initialNotes);
   const lastSaved = useRef(initialNotes);
   const [, startTransition] = useTransition();
+  const { track } = useSaveTracker();
 
   function commit() {
     if (notes === lastSaved.current) return;
     lastSaved.current = notes;
-    startTransition(() => updateChartNotes(patientId, notes));
+    const saved = notes;
+    startTransition(async () => {
+      await track("Chart notes", () => updateChartNotes(patientId, saved));
+    });
   }
 
   return (

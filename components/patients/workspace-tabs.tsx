@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useHeaderInfo } from "@/components/header-context";
+import { useSaveTracker } from "@/components/save-status";
 import { Odontogram } from "@/components/odontogram/odontogram";
 import { ReadOnlyOdontogram } from "@/components/odontogram/read-only-odontogram";
 import { ChartNotes } from "@/components/patients/chart-notes";
@@ -106,7 +107,8 @@ export function WorkspaceTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { setInfo, setIsSaving } = useHeaderInfo();
+  const { setInfo } = useHeaderInfo();
+  const { track } = useSaveTracker();
 
   const rawTab = searchParams.get("tab");
   const activeTab = rawTab && rawTab in TAB_LABEL ? rawTab : "chart";
@@ -139,15 +141,9 @@ export function WorkspaceTabs({
   const [overlayState, setOverlayState] = useState<OverlayState>(() => buildOverlayState(toothOverlays));
   const [chartBridges, setChartBridges] = useState<BridgeInfo[]>(() => buildBridgeInfos(bridges, bridgeTeeth));
 
-  const [isSavingBoard, startBoardSave] = useTransition();
+  const [, startBoardSave] = useTransition();
   const [showExistingChart, setShowExistingChart] = useState(true);
   const [showProposedChart, setShowProposedChart] = useState(false);
-
-  // Mirrors the kanban board's save state into the sticky header's status dot.
-  useEffect(() => {
-    setIsSaving(isSavingBoard);
-    return () => setIsSaving(false);
-  }, [isSavingBoard, setIsSaving]);
 
   // Read via ref inside async callbacks so they can stay referentially
   // stable instead of re-subscribing every time planId resolves.
@@ -232,53 +228,95 @@ export function WorkspaceTabs({
 
   function handleAddKanban(input: KanbanAddInput) {
     startBoardSave(async () => {
-      const { planId: resolvedPlanId, items } = await addKanbanProcedure(patientId, planIdRef.current, input);
-      setPlanId(resolvedPlanId);
-      setBoardItems((prev) => [
-        ...prev,
-        ...items.map((item) => ({
-          id: item.id,
-          procedureId: item.procedureId,
-          adaCode: item.adaCode,
-          description: item.description,
-          fee: item.fee,
-          appointmentNumber: null,
-          chartKey: item.chartKey,
-          toothNumber: item.toothNumber,
-          surfaces: item.surfaces,
-        })),
-      ]);
-      patchChartStateForAdd(input, items[0]?.chartKey);
+      await track("Add procedure to plan", async () => {
+        const { planId: resolvedPlanId, items } = await addKanbanProcedure(patientId, planIdRef.current, input);
+        setPlanId(resolvedPlanId);
+        setBoardItems((prev) => [
+          ...prev,
+          ...items.map((item) => ({
+            id: item.id,
+            procedureId: item.procedureId,
+            adaCode: item.adaCode,
+            description: item.description,
+            fee: item.fee,
+            appointmentNumber: null,
+            chartKey: item.chartKey,
+            toothNumber: item.toothNumber,
+            surfaces: item.surfaces,
+          })),
+        ]);
+        patchChartStateForAdd(input, items[0]?.chartKey);
+      });
     });
   }
 
   function handleAddManual(procedure: Procedure, toothNumber?: number) {
     startBoardSave(async () => {
-      const { planId: resolvedPlanId, item } = await addProcedureToPlan(
-        patientId,
-        planIdRef.current,
-        procedure.id,
-        toothNumber,
-      );
-      setPlanId(resolvedPlanId);
-      setBoardItems((prev) => [
-        ...prev,
-        {
-          id: item.id,
-          procedureId: procedure.id,
-          adaCode: procedure.ada_code,
-          description: procedure.description,
-          fee: procedure.fee,
-          appointmentNumber: null,
-          chartKey: null,
-          toothNumber: toothNumber ?? null,
-          surfaces: [],
-        },
-      ]);
+      await track(`Add ${procedure.ada_code} to plan`, async () => {
+        const { planId: resolvedPlanId, item } = await addProcedureToPlan(
+          patientId,
+          planIdRef.current,
+          procedure.id,
+          toothNumber,
+        );
+        setPlanId(resolvedPlanId);
+        setBoardItems((prev) => [
+          ...prev,
+          {
+            id: item.id,
+            procedureId: procedure.id,
+            adaCode: procedure.ada_code,
+            description: procedure.description,
+            fee: procedure.fee,
+            appointmentNumber: null,
+            chartKey: null,
+            toothNumber: toothNumber ?? null,
+            surfaces: [],
+          },
+        ]);
+      });
     });
   }
 
+  // Removing a procedure deletes a billing line and its chart graphic, so it
+  // waits out a short undo window before touching the chart or the server.
+  // Until then the card is only hidden.
+  const UNDO_WINDOW_MS = 5000;
+  const [pendingRemovals, setPendingRemovals] = useState<{ key: string; label: string; hiddenIds: string[] }[]>([]);
+  const removalTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const commitRemoveRef = useRef<(itemId: string) => void>(() => {});
+
   function handleRemove(itemId: string) {
+    const item = boardItems.find((i) => i.id === itemId);
+    if (!item || removalTimers.current.has(itemId)) return;
+
+    const bridgePrefix = item.chartKey?.startsWith("bridge-")
+      ? `bridge-${bridgeIdFromChartKey(item.chartKey)}-`
+      : null;
+    const hiddenIds = bridgePrefix
+      ? boardItems.filter((i) => i.chartKey?.startsWith(bridgePrefix)).map((i) => i.id)
+      : [item.id];
+    const label = `${item.adaCode}${item.toothNumber !== null ? ` #${item.toothNumber}` : ""}${
+      hiddenIds.length > 1 ? ` + ${hiddenIds.length - 1} more in this bridge` : ""
+    }`;
+
+    setPendingRemovals((prev) => [...prev, { key: itemId, label, hiddenIds }]);
+    removalTimers.current.set(
+      itemId,
+      setTimeout(() => commitRemoveRef.current(itemId), UNDO_WINDOW_MS),
+    );
+  }
+
+  function handleUndoRemove(key: string) {
+    const timer = removalTimers.current.get(key);
+    if (timer) clearTimeout(timer);
+    removalTimers.current.delete(key);
+    setPendingRemovals((prev) => prev.filter((r) => r.key !== key));
+  }
+
+  function commitRemove(itemId: string) {
+    removalTimers.current.delete(itemId);
+    setPendingRemovals((prev) => prev.filter((r) => r.key !== itemId));
     const item = boardItems.find((i) => i.id === itemId);
     const chartKey = item?.chartKey ?? null;
 
@@ -294,14 +332,40 @@ export function WorkspaceTabs({
     }
 
     startBoardSave(async () => {
-      await removeKanbanItem(patientId, itemId);
+      await track("Remove procedure", () => removeKanbanItem(patientId, itemId));
     });
   }
+  useEffect(() => {
+    commitRemoveRef.current = commitRemove;
+  });
+
+  // Leaving the page (or closing the tab) shouldn't silently cancel a removal
+  // the dentist already made: finish every pending one on the way out.
+  useEffect(() => {
+    const timers = removalTimers.current;
+    return () => {
+      for (const [key, timer] of timers) {
+        clearTimeout(timer);
+        commitRemoveRef.current(key);
+      }
+    };
+  }, []);
+
+  const hasPendingRemovals = pendingRemovals.length > 0;
+  useEffect(() => {
+    if (!hasPendingRemovals) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [hasPendingRemovals]);
+
+  const hiddenIds = new Set(pendingRemovals.flatMap((r) => r.hiddenIds));
+  const visibleBoardItems = boardItems.filter((item) => !hiddenIds.has(item.id));
 
   function handleFeeChange(itemId: string, fee: number) {
     setBoardItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, fee } : item)));
     startBoardSave(async () => {
-      await updatePlanItemFee(patientId, itemId, fee);
+      await track("Fee change", () => updatePlanItemFee(patientId, itemId, fee));
     });
   }
 
@@ -312,7 +376,7 @@ export function WorkspaceTabs({
       prev.map((item) => (item.id === itemId ? { ...item, appointmentNumber } : item)),
     );
     startBoardSave(async () => {
-      await scheduleItem(patientId, currentPlanId, itemId, appointmentNumber);
+      await track("Move to visit", () => scheduleItem(patientId, currentPlanId, itemId, appointmentNumber));
     });
   }
 
@@ -327,7 +391,7 @@ export function WorkspaceTabs({
     setPlanId(null);
 
     startBoardSave(async () => {
-      await archiveActivePlan(patientId, currentPlanId);
+      await track("Start new plan", () => archiveActivePlan(patientId, currentPlanId));
     });
   }
 
@@ -412,7 +476,7 @@ export function WorkspaceTabs({
           </Card>
           <VisitBoard
             patientId={patientId}
-            items={boardItems}
+            items={visibleBoardItems}
             procedures={procedures}
             newPlanButton={
               <AlertDialog>
@@ -441,6 +505,8 @@ export function WorkspaceTabs({
             onRemove={handleRemove}
             onMove={handleMove}
             onFeeChange={handleFeeChange}
+            pendingRemovals={pendingRemovals}
+            onUndoRemove={handleUndoRemove}
           />
           <PlanHistory plans={planHistory} />
         </div>

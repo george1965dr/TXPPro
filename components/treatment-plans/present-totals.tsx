@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { updatePlanAdjustment } from "@/app/actions/treatment-plan";
+import { useSaveTracker } from "@/components/save-status";
 
 interface PresentTotalsProps {
   patientId: string;
@@ -16,6 +17,7 @@ export function PresentTotals({ patientId, treatmentPlanId, subtotal, initialAdj
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(initialAdjustment));
   const [, startTransition] = useTransition();
+  const { track } = useSaveTracker();
 
   function commit() {
     const next = Number(draft);
@@ -23,7 +25,9 @@ export function PresentTotals({ patientId, treatmentPlanId, subtotal, initialAdj
     setEditing(false);
     if (clamped !== adjustment) {
       setAdjustment(clamped);
-      startTransition(() => updatePlanAdjustment(patientId, treatmentPlanId, clamped));
+      startTransition(async () => {
+        await track("Plan adjustment", () => updatePlanAdjustment(patientId, treatmentPlanId, clamped));
+      });
     }
   }
 
