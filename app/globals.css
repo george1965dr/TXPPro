@@ -27,6 +27,8 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-proposed: var(--proposed);
@@ -82,6 +84,15 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
+  --canvas-top: oklch(0.85 0.08 245);
+  --canvas-mid: oklch(0.94 0.035 285);
+  --canvas-base: oklch(0.975 0.012 245);
+  --panel: oklch(1 0 0 / 0.82);
+  --panel-border: oklch(1 0 0 / 0.7);
+  --panel-shadow: 0 1px 0 oklch(1 0 0 / 0.7) inset, 0 18px 48px -18px oklch(0.4 0.09 262 / 0.22);
+  --watermark: oklch(1 0 0 / 0.5);
+  --navy: oklch(0.27 0.07 262);
+  --navy-foreground: oklch(0.99 0 0);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -120,6 +131,15 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+  --canvas-top: oklch(0.27 0.06 265);
+  --canvas-mid: oklch(0.2 0.035 270);
+  --canvas-base: oklch(0.15 0.015 260);
+  --panel: oklch(0.24 0.02 265 / 0.78);
+  --panel-border: oklch(1 0 0 / 0.1);
+  --panel-shadow: 0 1px 0 oklch(1 0 0 / 0.06) inset, 0 18px 48px -18px oklch(0 0 0 / 0.6);
+  --watermark: oklch(1 0 0 / 0.06);
+  --navy: oklch(0.93 0.03 255);
+  --navy-foreground: oklch(0.2 0.04 262);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -136,6 +156,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: linear-gradient(180deg, var(--canvas-top) 0, var(--canvas-mid) 30rem, var(--canvas-base) 72rem);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans;
@@ -170,5 +192,17 @@
 
   body {
     background: white !important;
+    background-image: none !important;
   }
+}
+/*
+ * Frosted panel: mostly opaque on purpose. The blur and gradient show at the
+ * edges, but text always sits on a surface that holds 4.5:1 contrast.
+ */
+@utility panel {
+  background-color: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(24px) saturate(1.4);
+  border-radius: 1.75rem;
 }

@@ -111,7 +111,7 @@ export function SaveStatusIndicator({ showWhenIdle }: { showWhenIdle: boolean })
   }
 
   return (
-    <p role="status" aria-live="polite" className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <p role="status" aria-live="polite" className="flex items-center gap-1.5 text-xs text-foreground/75">
       {pending > 0 ? (
         <>
           <Loader2 className="size-3.5 animate-spin" aria-hidden />

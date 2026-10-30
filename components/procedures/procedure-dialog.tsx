@@ -38,7 +38,7 @@ export function ProcedureDialog({ procedure, trigger }: ProcedureDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button>
+          <Button className="h-11 gap-2 rounded-full bg-navy px-5 text-sm text-navy-foreground hover:bg-navy/90">
             <Plus className="size-4" />
             New procedure
           </Button>

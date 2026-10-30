@@ -41,11 +41,15 @@ export function VisitColumn({
         if (itemId) onDropItem(itemId);
       }}
       className={cn(
-        "flex min-h-[180px] flex-col rounded-md bg-muted/40 p-2",
-        isOver && "bg-accent/60",
+        "flex min-h-[200px] flex-col rounded-2xl bg-foreground/[0.04] p-2.5 transition-colors",
+        label === "Unscheduled" && "border border-dashed border-foreground/20",
+        isOver && "bg-primary/10",
       )}
     >
-      <p className="mb-2 text-sm font-medium">{label}</p>
+      <p className="mb-2.5 flex items-baseline justify-between px-1 text-sm font-medium">
+        {label}
+        <span className="text-xs font-normal text-muted-foreground tabular-nums">{items.length}</span>
+      </p>
       <div className="flex flex-1 flex-col gap-1.5">
         {items.map((item) => (
           <VisitCard
@@ -58,7 +62,7 @@ export function VisitColumn({
           />
         ))}
       </div>
-      <p className="mt-2 border-t pt-2 text-right text-xs text-muted-foreground">
+      <p className="mt-2 border-t border-foreground/10 px-1 pt-2 text-right text-xs text-muted-foreground tabular-nums">
         ${subtotal.toLocaleString()}
       </p>
     </div>

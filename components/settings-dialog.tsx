@@ -19,9 +19,14 @@ import {
 interface SettingsDialogProps {
   initialPracticeName: string;
   initialPracticeAddress: string;
+  triggerClassName?: string;
 }
 
-export function SettingsDialog({ initialPracticeName, initialPracticeAddress }: SettingsDialogProps) {
+export function SettingsDialog({
+  initialPracticeName,
+  initialPracticeAddress,
+  triggerClassName,
+}: SettingsDialogProps) {
   const [open, setOpen] = useState(false);
 
   async function action(formData: FormData) {
@@ -41,7 +46,7 @@ export function SettingsDialog({ initialPracticeName, initialPracticeAddress }: 
           type="button"
           aria-label="Settings"
           title="Settings"
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className={triggerClassName ?? "rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"}
         >
           <Settings className="size-4" />
         </button>

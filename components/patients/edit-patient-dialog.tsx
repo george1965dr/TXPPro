@@ -22,7 +22,7 @@ export function EditPatientDialog({ patient }: { patient: Patient }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" className="h-9 rounded-full px-4">
           <Pencil className="size-4" />
           Edit
         </Button>

@@ -1,56 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { SettingsDialog } from "@/components/settings-dialog";
 import { useHeaderInfo } from "@/components/header-context";
 import { SaveStatusIndicator } from "@/components/save-status";
 
 interface AppHeaderProps {
-  initialPracticeName: string;
-  initialPracticeAddress: string;
+  practiceName: string;
 }
 
-export function AppHeader({ initialPracticeName, initialPracticeAddress }: AppHeaderProps) {
+// Text here sits straight on the gradient canvas, which holds 4.5:1 only for
+// full-strength foreground text, so nothing in this strip uses muted-foreground.
+export function AppHeader({ practiceName }: AppHeaderProps) {
   const { info } = useHeaderInfo();
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 print:hidden">
-      <div className="mx-auto flex h-14 w-full max-w-4xl items-center justify-between px-8">
-        <div className="flex items-center gap-6">
+    <header className="sticky top-0 z-10 bg-background/40 backdrop-blur-xl md:-ml-24 md:pl-24 print:hidden">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-8">
+        <div className="flex items-center gap-4">
           <Link href="/patients" className="flex items-baseline gap-2">
-            {initialPracticeName ? (
+            {practiceName ? (
               <>
-                <span className="text-sm font-medium tracking-tight">{initialPracticeName}</span>
-                <span className="text-base font-medium text-muted-foreground">
+                <span className="text-sm font-medium tracking-tight">{practiceName}</span>
+                <span className="text-sm font-medium text-foreground/70">
                   TXP <span className="text-primary">Pro</span>
                 </span>
               </>
             ) : (
-              <span className="text-xl font-semibold tracking-tight">
+              <span className="text-lg font-semibold tracking-tight">
                 TXP <span className="text-primary">Pro</span>
               </span>
             )}
           </Link>
           {info && (
             <div className="flex items-center gap-1.5 text-sm">
-              <span className="text-muted-foreground">/</span>
+              <span className="text-foreground/60">/</span>
               <span className="font-medium">{info.patientName}</span>
-              <span className="text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{info.tabLabel}</span>
+              <span className="text-foreground/60">/</span>
+              <span className="text-foreground/80">{info.tabLabel}</span>
             </div>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <SaveStatusIndicator showWhenIdle={!!info} />
-          <div className="flex items-center gap-1">
-            <SettingsDialog
-              initialPracticeName={initialPracticeName}
-              initialPracticeAddress={initialPracticeAddress}
-            />
-            <ThemeToggle />
-          </div>
-        </div>
+        <SaveStatusIndicator showWhenIdle={!!info} />
       </div>
     </header>
   );

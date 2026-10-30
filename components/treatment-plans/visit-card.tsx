@@ -36,7 +36,7 @@ export function VisitCard({ item, visitCount, onMove, onRemove, onFeeChange }: V
       onDragEnd={(e) => {
         e.currentTarget.style.opacity = "1";
       }}
-      className={`relative rounded-md border bg-card p-2 text-sm ${isPending ? "opacity-60" : "cursor-grab"}`}
+      className={`relative rounded-xl border border-foreground/[0.06] bg-white/85 p-3 text-sm shadow-[0_1px_2px_oklch(0.35_0.08_262/0.08),0_6px_16px_-8px_oklch(0.35_0.08_262/0.14)] dark:border-white/10 dark:bg-white/[0.07] dark:shadow-none ${isPending ? "opacity-60" : "cursor-grab"}`}
     >
       <button
         type="button"

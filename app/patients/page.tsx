@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NewPatientDialog } from "@/components/patients/new-patient-dialog";
 import { PatientList } from "@/components/patients/patient-list";
-import { StatsCards } from "@/components/patients/stats-cards";
 import type { Patient } from "@/lib/types";
 
 export default async function PatientsPage() {
@@ -19,15 +18,18 @@ export default async function PatientsPage() {
     .map((p) => p.patient_id as string);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Patients</h1>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-8 pt-6 pb-12">
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-4xl font-light tracking-tight">Patients</h1>
         <NewPatientDialog />
       </div>
 
-      <StatsCards totalPlans={totalPlans ?? 0} acceptedPlans={acceptedPlans ?? 0} />
-
-      <PatientList patients={patients} acceptedPatientIds={acceptedPatientIds} />
+      <PatientList
+        patients={patients}
+        acceptedPatientIds={acceptedPatientIds}
+        totalPlans={totalPlans ?? 0}
+        acceptedPlans={acceptedPlans ?? 0}
+      />
     </div>
   );
 }

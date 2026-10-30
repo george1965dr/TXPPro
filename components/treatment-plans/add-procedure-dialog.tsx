@@ -177,7 +177,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button className="h-10 gap-2 rounded-full bg-navy px-4 text-navy-foreground hover:bg-navy/90">
           <Plus className="size-4" />
           Add procedure
         </Button>

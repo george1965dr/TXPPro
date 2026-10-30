@@ -44,11 +44,11 @@ export function VisitBoard({
   const visitNumbers = Array.from({ length: visitCount }, (_, i) => i + 1);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="panel flex flex-col gap-4 p-6">
       <div className="flex flex-wrap items-center gap-2">
         <AddProcedureDialog procedures={procedures} onAddKanban={onAddKanban} onAddManual={onAddManual} />
-        <Button size="sm" asChild>
-          <Link href={`/patients/${patientId}/present`}>Present to patient</Link>
+        <Button variant="outline" className="h-10 rounded-full px-4" asChild>
+          <Link href={`/patients/${patientId}/present`}>Print plan</Link>
         </Button>
       </div>
 
@@ -58,14 +58,14 @@ export function VisitBoard({
         </p>
         <div className="flex items-center gap-2">
           {newPlanButton}
-          <Button variant="outline" size="sm" onClick={() => setVisitCount((c) => c + 1)}>
+          <Button variant="outline" className="h-10 rounded-full px-4" onClick={() => setVisitCount((c) => c + 1)}>
             + Add visit
           </Button>
         </div>
       </div>
 
       <div
-        className="grid gap-2"
+        className="grid gap-3"
         style={{ gridTemplateColumns: `repeat(${visitNumbers.length + 1}, minmax(140px, 1fr))` }}
       >
         <VisitColumn
@@ -107,10 +107,10 @@ export function VisitBoard({
           {pendingRemovals.map((removal) => (
             <div
               key={removal.key}
-              className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2 text-sm shadow-lg"
+              className="flex items-center gap-3 rounded-full border bg-card py-2 pr-2 pl-5 text-sm shadow-lg"
             >
               <span>Removed {removal.label}</span>
-              <Button type="button" size="sm" variant="outline" onClick={() => onUndoRemove(removal.key)}>
+              <Button type="button" variant="outline" className="h-8 rounded-full px-3" onClick={() => onUndoRemove(removal.key)}>
                 Undo
               </Button>
             </div>

@@ -397,13 +397,14 @@ export function WorkspaceTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange}>
-      <TabsList>
+      <TabsList className="self-start">
         <TabsTrigger value="chart">Chart</TabsTrigger>
         <TabsTrigger value="perio">Perio</TabsTrigger>
         <TabsTrigger value="sequence">Sequence</TabsTrigger>
         <TabsTrigger value="media">Photos</TabsTrigger>
       </TabsList>
       <TabsContent value="chart" className="pt-4">
+        <div className="panel p-6">
         <Odontogram
           patientId={patientId}
           chartState={chartState}
@@ -413,13 +414,16 @@ export function WorkspaceTabs({
           onOverlayStateChange={setOverlayState}
           onBridgesChange={setChartBridges}
         />
+        </div>
       </TabsContent>
       <TabsContent value="perio" className="pt-4">
-        <PerioGrid
-          patientId={patientId}
-          initialMeasurements={perioMeasurements}
-          initialStatuses={perioStatuses}
-        />
+        <div className="panel p-6">
+          <PerioGrid
+            patientId={patientId}
+            initialMeasurements={perioMeasurements}
+            initialStatuses={perioStatuses}
+          />
+        </div>
       </TabsContent>
       <TabsContent value="sequence" className="pt-4">
         <div className="flex flex-col gap-4">
@@ -481,7 +485,7 @@ export function WorkspaceTabs({
             newPlanButton={
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button type="button" variant="outline" size="sm" disabled={!planId}>
+                  <Button type="button" variant="outline" className="h-10 rounded-full px-4" disabled={!planId}>
                     New plan
                   </Button>
                 </AlertDialogTrigger>
@@ -512,7 +516,9 @@ export function WorkspaceTabs({
         </div>
       </TabsContent>
       <TabsContent value="media" className="pt-4">
-        <MediaGallery patientId={patientId} initialItems={mediaItems} />
+        <div className="panel p-6">
+          <MediaGallery patientId={patientId} initialItems={mediaItems} />
+        </div>
       </TabsContent>
     </Tabs>
   );

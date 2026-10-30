@@ -21,7 +21,7 @@ export function ArchivePatientButton({ patientId, patientName }: { patientId: st
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
+        <Button variant="destructive" className="h-9 rounded-full px-4">
           <Trash2 className="size-4" />
           Delete
         </Button>

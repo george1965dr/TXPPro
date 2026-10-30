@@ -4,12 +4,13 @@ import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 function subscribeNoop() {
   return () => {};
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
   // The server can't know the user's preferred theme, so this button must
   // render inert until hydration completes - useSyncExternalStore's server
@@ -26,6 +27,7 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
+      className={cn(className)}
       aria-label="Toggle theme"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >

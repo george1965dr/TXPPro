@@ -37,13 +37,13 @@ export function ProcedureList({ procedures }: ProcedureListProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by code or name"
-          className="pl-8"
+          className="h-11 rounded-full border-white/70 bg-white/80 pl-10 dark:border-white/10 dark:bg-white/5"
         />
       </div>
 

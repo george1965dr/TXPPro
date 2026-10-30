@@ -93,7 +93,7 @@ export default async function PresentPlanPage({
   const hasUnscheduled = (summary?.unscheduled.items.length ?? 0) > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
+    <div className="mx-auto my-6 flex w-full max-w-2xl flex-col gap-6 rounded-3xl bg-white p-10 text-foreground [--foreground:oklch(0.145_0_0)] [--muted-foreground:oklch(0.4_0_0)] [--border:oklch(0.85_0_0)] [--background:oklch(1_0_0)] [--success:oklch(0.5_0.14_150)] [--success-foreground:oklch(0.99_0_0)] [--input:oklch(0.9_0_0)] [--muted:oklch(0.97_0_0)] shadow-[0_18px_48px_-18px_oklch(0.4_0.09_262/0.3)] print:my-0 print:max-w-none print:rounded-none print:p-0 print:shadow-none">
       {(practiceSettings?.name || practiceSettings?.address) && (
         <div className="border-b pb-4">
           {practiceSettings.name && <p className="text-lg font-semibold">{practiceSettings.name}</p>}

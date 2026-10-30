@@ -122,20 +122,22 @@ export default async function PatientWorkspacePage({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-8">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-8 pt-6 pb-12">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/patients">
-            <ArrowLeft className="size-4" />
-            Patients
-          </Link>
-        </Button>
+        <Link
+          href="/patients"
+          aria-label="Back to patients"
+          title="Back to patients"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-white/70 text-foreground shadow-sm outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-ring dark:bg-white/10 dark:hover:bg-white/20"
+        >
+          <ArrowLeft className="size-4" />
+        </Link>
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-tight">{typedPatient.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl font-light tracking-tight">{typedPatient.name}</h1>
             {typedPatient.archived_at && <Badge variant="secondary">Archived</Badge>}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/75">
             Born {new Date(typedPatient.birth_date).toLocaleDateString()}
           </p>
         </div>
@@ -143,7 +145,7 @@ export default async function PatientWorkspacePage({
           <EditPatientDialog patient={typedPatient} />
           {typedPatient.archived_at ? (
             <form action={restorePatient.bind(null, typedPatient.id)}>
-              <Button type="submit" variant="secondary" size="sm">
+              <Button type="submit" variant="secondary" className="h-9 rounded-full px-4">
                 Restore
               </Button>
             </form>
