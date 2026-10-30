@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { UPPER_ARCH, LOWER_ARCH } from "@/lib/dental/tooth-geometry";
 import { ToothSurfaceDiagram } from "./tooth-surface-diagram";
+import { OverlayKey } from "./overlay-key";
 import { buildToothToBridge, resolveToothDisplay, type BridgeInfo, type ChartState, type OverlayState } from "./chart-state";
 import type { ChartLayer } from "@/lib/types";
 
@@ -45,9 +46,12 @@ export function ReadOnlyOdontogram({ view, chartState, overlayState, bridges }: 
   };
 
   return (
-    <div className="flex flex-col gap-3 overflow-x-auto pb-2">
-      <div className="flex justify-center gap-1.5">{UPPER_ARCH.map(renderTooth)}</div>
-      <div className="flex justify-center gap-1.5">{LOWER_ARCH.map(renderTooth)}</div>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 overflow-x-auto pb-2">
+        <div className="flex justify-center gap-1.5">{UPPER_ARCH.map(renderTooth)}</div>
+        <div className="flex justify-center gap-1.5">{LOWER_ARCH.map(renderTooth)}</div>
+      </div>
+      <OverlayKey overlayState={overlayState} view={view} />
     </div>
   );
 }

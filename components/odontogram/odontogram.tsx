@@ -1,6 +1,7 @@
 "use client";
 
 import { useSaveTracker } from "@/components/save-status";
+import { OverlayKey } from "./overlay-key";
 import { useMemo, useState, useTransition } from "react";
 import { createBridge, removeBridge, setToothCondition, setToothOverlay } from "@/app/actions/chart";
 import { CONDITIONS, type ConditionId } from "@/lib/dental/conditions";
@@ -366,6 +367,8 @@ export function Odontogram({
         <div className="flex justify-center gap-2">{UPPER_ARCH.map(renderTooth)}</div>
         <div className="flex justify-center gap-2">{LOWER_ARCH.map(renderTooth)}</div>
       </div>
+
+      <OverlayKey overlayState={overlayState} view={view} />
 
       <p className="text-xs text-muted-foreground">
         Showing <span className="font-medium text-foreground">{view === "existing" ? "existing conditions" : "proposed treatment"}</span> only

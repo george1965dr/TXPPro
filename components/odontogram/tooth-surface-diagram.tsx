@@ -5,6 +5,7 @@ import {
   SURFACE_ZONE_POINTS,
   SURFACE_LABEL_POSITION,
 } from "@/lib/dental/tooth-geometry";
+import { CONDITIONS } from "@/lib/dental/conditions";
 import type { BridgeRole, BridgeType, ChartLayer, OverlayType, ToothSurface } from "@/lib/types";
 
 export interface BridgeMembership {
@@ -86,7 +87,7 @@ const WHOLE_LABEL: Record<string, string> = {
 /** Rendered as an empty, dashed outline - the tooth is (or will be) gone. */
 const EMPTY_WHOLE_VALUES = new Set(["missing", "extraction"]);
 
-const OVERLAY_BADGE: Record<OverlayType, string> = {
+export const OVERLAY_BADGE: Record<OverlayType, string> = {
   root_canal: "R",
   retreatment: "Rt",
   apicoectomy: "Ax",
@@ -105,6 +106,11 @@ const OVERLAY_BADGE: Record<OverlayType, string> = {
   fractured_restoration: "FR",
   gtr: "GTR",
 };
+
+/** Full names for the badge codes, taken from the condition list so the two never drift. */
+export const OVERLAY_LABEL = Object.fromEntries(
+  CONDITIONS.filter((c) => c.target === "overlay").map((c) => [c.id, c.label]),
+) as Record<OverlayType, string>;
 
 export function ToothSurfaceDiagram({
   toothNumber,
@@ -227,13 +233,15 @@ export function ToothSurfaceDiagram({
       )}
 
       {overlayTypes.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-0.5" style={{ maxWidth: size }}>
+        <div className="flex flex-wrap justify-center gap-0.5" style={{ maxWidth: size + 8 }}>
           {overlayTypes.map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => onOverlayClick(type)}
-              className="cursor-pointer rounded-sm px-1 text-[9px] leading-tight"
+              aria-label={`${OVERLAY_LABEL[type]}, tooth ${toothNumber}`}
+              title={OVERLAY_LABEL[type]}
+              className="cursor-pointer rounded-full px-1.5 py-px text-xs leading-tight font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ background: color.fill, color: color.text }}
             >
               {OVERLAY_BADGE[type]}
