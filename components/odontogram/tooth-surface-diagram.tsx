@@ -304,7 +304,7 @@ export function ToothSurfaceDiagram({
           if (bridge || whole) onWholeClick();
           else onSurfaceClick(surface);
         }}
-        className="rounded-full px-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        className="min-h-6 rounded-full px-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
       >
         #{toothNumber}
       </button>

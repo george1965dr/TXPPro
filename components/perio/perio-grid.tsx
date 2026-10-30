@@ -110,7 +110,7 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Sites trace mesial to distal, facial then lingual · click the dot under a PD value to flag bleeding
+        Sites trace mesial to distal, facial then lingual · click the dot under a PD value (or press B in the box) to flag bleeding
       </p>
 
       <PerioArchTable

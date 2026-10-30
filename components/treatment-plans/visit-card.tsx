@@ -94,7 +94,7 @@ export function VisitCard({ item, visitCount, onMove, onRemove, onFeeChange }: V
             setFeeDraft(String(item.fee));
             setEditingFee(true);
           }}
-          className="shrink-0 rounded px-1 text-right text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+          className="min-h-6 shrink-0 rounded-md px-1.5 text-right text-sm font-medium tabular-nums outline-none hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-ring/50"
           title="Click to edit fee"
         >
           ${item.fee.toLocaleString()}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Archive } from "lucide-react";
 import { archivePatient } from "@/app/actions/patients";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,24 +21,24 @@ export function ArchivePatientButton({ patientId, patientName }: { patientId: st
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" className="h-9 rounded-full px-4">
-          <Trash2 className="size-4" />
-          Delete
+        <Button variant="outline" className="h-9 rounded-full px-4">
+          <Archive className="size-4" />
+          Archive
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete {patientName}?</AlertDialogTitle>
+          <AlertDialogTitle>Archive {patientName}?</AlertDialogTitle>
           <AlertDialogDescription>
-            This archives the patient and all their records — nothing is permanently deleted, and it
-            can be restored later.
+            They move to the Archived list with all their records. Nothing is deleted, and you can
+            restore them at any time.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <form action={archivePatientWithId}>
-            <AlertDialogAction type="submit" variant="destructive" className="w-full">
-              Delete
+            <AlertDialogAction type="submit" className="w-full">
+              Archive
             </AlertDialogAction>
           </form>
         </AlertDialogFooter>

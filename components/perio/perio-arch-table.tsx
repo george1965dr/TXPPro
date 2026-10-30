@@ -28,10 +28,12 @@ function NumberCell({
   value,
   onCommit,
   severity,
+  label,
   inputRef,
   onKeyDown,
 }: {
   value: number;
+  label: string;
   onCommit: (value: number) => void;
   severity: "normal" | "watch" | "significant";
   inputRef?: (el: HTMLInputElement | null) => void;
@@ -40,6 +42,7 @@ function NumberCell({
   return (
     <Input
       ref={inputRef}
+      aria-label={label}
       type="number"
       min={0}
       max={15}
@@ -73,6 +76,12 @@ export function PerioArchTable({
 
   function makeKeyDownHandler(field: "pd" | "rec", tooth: number, site: PerioSite) {
     return (e: KeyboardEvent<HTMLInputElement>) => {
+      // B flags bleeding on probing for this site without leaving the keyboard.
+      if (field === "pd" && e.key.toLowerCase() === "b" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        onBopToggle(tooth, site);
+        return;
+      }
       if (e.key !== "Tab") return;
       const index = tabSequence.findIndex((stop) => stop.tooth === tooth && stop.site === site);
       if (index === -1) return;
@@ -117,6 +126,7 @@ export function PerioArchTable({
                     <div className="flex flex-col items-center gap-1">
                       <NumberCell
                         value={v.probing_depth}
+                        label={`Tooth ${t} ${site} probing depth`}
                         severity={pdSeverity(v.probing_depth)}
                         onCommit={(val) => onPdOrRecChange(t, site, "probing_depth", val)}
                         inputRef={(el) => {
@@ -127,13 +137,19 @@ export function PerioArchTable({
                       <button
                         type="button"
                         tabIndex={-1}
-                        aria-label="Bleeding on probing"
+                        aria-label={`Tooth ${t} ${site} bleeding on probing`}
+                        aria-pressed={v.bleeding_on_probing}
                         onClick={() => onBopToggle(t, site)}
-                        className={cn(
-                          "size-2 rounded-full border",
-                          v.bleeding_on_probing ? "border-red-500 bg-red-500" : "border-muted-foreground/40",
-                        )}
-                      />
+                        className="-my-1 grid size-6 place-items-center rounded-full outline-none hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "size-2.5 rounded-full border",
+                            v.bleeding_on_probing ? "border-red-500 bg-red-500" : "border-muted-foreground/60",
+                          )}
+                        />
+                      </button>
                     </div>
                   </td>
                 );
@@ -155,6 +171,7 @@ export function PerioArchTable({
                   <td key={t} className="border-b px-0.5 py-1 text-center">
                     <NumberCell
                       value={v.recession}
+                      label={`Tooth ${t} ${site} recession`}
                       severity={recessionSeverity(v.recession)}
                       onCommit={(val) => onPdOrRecChange(t, site, "recession", val)}
                       inputRef={(el) => {
@@ -200,6 +217,7 @@ export function PerioArchTable({
                 <td key={t} className="border-b px-0.5 py-1 text-center">
                   <NumberCell
                     value={status.mobility}
+                    label={`Tooth ${t} mobility`}
                     severity={status.mobility >= 3 ? "significant" : status.mobility >= 1 ? "watch" : "normal"}
                     onCommit={(val) => onStatusChange(t, "mobility", Math.min(val, 3))}
                   />
@@ -220,6 +238,7 @@ export function PerioArchTable({
                   {isMolar ? (
                     <NumberCell
                       value={status.furcation ?? 0}
+                      label={`Tooth ${t} furcation`}
                       severity={
                         (status.furcation ?? 0) >= 3 ? "significant" : (status.furcation ?? 0) >= 1 ? "watch" : "normal"
                       }
