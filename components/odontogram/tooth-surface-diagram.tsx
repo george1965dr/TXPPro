@@ -4,6 +4,7 @@ import {
   SURFACE_ORDER,
   SURFACE_ZONE_POINTS,
   SURFACE_LABEL_POSITION,
+  SURFACE_BY_ABBREVIATION,
 } from "@/lib/dental/tooth-geometry";
 import { CONDITIONS } from "@/lib/dental/conditions";
 import type { BridgeRole, BridgeType, ChartLayer, OverlayType, ToothSurface } from "@/lib/types";
@@ -26,6 +27,14 @@ interface ToothSurfaceDiagramProps {
   size?: number;
   /** Existing restoration + a caries signal on the same tooth - framed in a bright outline so it isn't missed. */
   alert?: boolean;
+  /**
+   * Roving tab stop: only the active tooth's number button is tabbable, the
+   * rest are reached with the arrow keys. Omit for a chart with no keyboard
+   * charting (the read-only one), which keeps every button tabbable.
+   */
+  tabbable?: boolean;
+  onNavigate?: (direction: ToothNavigation) => void;
+  onToothFocus?: () => void;
   onSurfaceClick: (surface: ToothSurface) => void;
   onWholeClick: () => void;
   onOverlayClick: (overlay: OverlayType) => void;
@@ -112,6 +121,24 @@ export const OVERLAY_LABEL = Object.fromEntries(
   CONDITIONS.filter((c) => c.target === "overlay").map((c) => [c.id, c.label]),
 ) as Record<OverlayType, string>;
 
+export type ToothNavigation = "left" | "right" | "up" | "down" | "first" | "last";
+
+const NAVIGATION_KEYS: Record<string, ToothNavigation> = {
+  ArrowLeft: "left",
+  ArrowRight: "right",
+  ArrowUp: "up",
+  ArrowDown: "down",
+  Home: "first",
+  End: "last",
+};
+
+/** F and B both mean the outer (facial/buccal) surface; I is the incisal spelling of occlusal. */
+function surfaceForKey(key: string): ToothSurface | undefined {
+  const letter = key.toUpperCase();
+  if (letter === "B") return "facial";
+  return SURFACE_BY_ABBREVIATION[letter];
+}
+
 export function ToothSurfaceDiagram({
   toothNumber,
   view,
@@ -121,6 +148,9 @@ export function ToothSurfaceDiagram({
   bridge,
   size = 40,
   alert,
+  tabbable,
+  onNavigate,
+  onToothFocus,
   onSurfaceClick,
   onWholeClick,
   onOverlayClick,
@@ -134,7 +164,7 @@ export function ToothSurfaceDiagram({
 
   return (
     <div className="relative flex flex-col items-center gap-0.5">
-      <svg viewBox="0 0 44 44" width={size} height={size}>
+      <svg viewBox="0 0 44 44" width={size} height={size} aria-hidden="true">
         {bridge ? (
           <>
             <rect
@@ -252,8 +282,29 @@ export function ToothSurfaceDiagram({
 
       <button
         type="button"
+        data-tooth-button={toothNumber}
+        tabIndex={tabbable === false ? -1 : 0}
+        aria-label={`Tooth ${toothNumber}`}
         onClick={onWholeClick}
-        className="text-sm text-muted-foreground hover:text-foreground"
+        onFocus={onToothFocus}
+        onKeyDown={(e) => {
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const direction = NAVIGATION_KEYS[e.key];
+          if (direction && onNavigate) {
+            e.preventDefault();
+            onNavigate(direction);
+            return;
+          }
+          const surface = surfaceForKey(e.key);
+          if (!surface || !onNavigate) return;
+          e.preventDefault();
+          // A tooth already charted as a whole (crown, implant, bridge...) has no
+          // surface zones on screen - a click there lands on the whole tooth, so a
+          // surface key does the same.
+          if (bridge || whole) onWholeClick();
+          else onSurfaceClick(surface);
+        }}
+        className="rounded-full px-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
       >
         #{toothNumber}
       </button>

@@ -2,7 +2,7 @@
 
 import { useSaveTracker } from "@/components/save-status";
 import { OverlayKey } from "./overlay-key";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { createBridge, removeBridge, setToothCondition, setToothOverlay } from "@/app/actions/chart";
 import { CONDITIONS, type ConditionId } from "@/lib/dental/conditions";
 import { UPPER_ARCH, LOWER_ARCH, resolveBridgeRange } from "@/lib/dental/tooth-geometry";
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { BridgeType, ChartLayer, OverlayType, ToothSurface } from "@/lib/types";
 import { ConditionPalette } from "./condition-palette";
-import { ToothSurfaceDiagram } from "./tooth-surface-diagram";
+import { ToothSurfaceDiagram, type ToothNavigation } from "./tooth-surface-diagram";
 import {
   buildToothToBridge,
   resolveToothDisplay,
@@ -57,6 +57,10 @@ export function Odontogram({
   const [condition, setCondition] = useState<ConditionId>("filling");
   const [, startTransition] = useTransition();
   const { track } = useSaveTracker();
+  // Keyboard model: one roving tab stop (the active tooth), arrows move, letters chart.
+  const [activeTooth, setActiveTooth] = useState(UPPER_ARCH[0]);
+  const [announcement, setAnnouncement] = useState("");
+  const gridRef = useRef<HTMLDivElement>(null);
   const editable = view === "existing";
 
   const conditionDef = CONDITIONS.find((c) => c.id === condition)!;
@@ -216,21 +220,27 @@ export function Odontogram({
   }
 
   function applyTool(toothNumber: number, target: ToothSurface | "whole") {
+    const place = target === "whole" ? `tooth ${toothNumber}` : `tooth ${toothNumber}, ${target} surface`;
+
     if (condition === "erase") {
       if (target === "whole") {
         const membership = toothToBridge.get(toothNumber);
         if (membership) {
           removeBridgeLocal(membership.bridge.id);
+          setAnnouncement(`Bridge removed from tooth ${toothNumber}`);
           return;
         }
       }
       eraseSurfaceOrWhole(toothNumber, target);
+      setAnnouncement(`Erased ${place}`);
       return;
     }
 
     if (conditionDef.target === "overlay") {
       if (target !== "whole") return; // overlays are tooth-level, not surface-level
+      const wasPresent = !!overlayState[toothNumber]?.[condition as OverlayType]?.existing;
       toggleOverlay(toothNumber);
+      setAnnouncement(`${conditionDef.label} ${wasPresent ? "removed from" : "added to"} tooth ${toothNumber}`);
       return;
     }
 
@@ -239,9 +249,15 @@ export function Odontogram({
     if (isWholeTool !== isWholeTarget) {
       // Surface tools only apply to surfaces; whole-tooth tools only apply
       // to the tooth number. Ignore a mismatched click rather than guessing.
+      setAnnouncement(
+        isWholeTool
+          ? `${conditionDef.label} applies to the whole tooth: press Enter on tooth ${toothNumber}`
+          : `${conditionDef.label} applies to a surface: press M, D, F, L or O`,
+      );
       return;
     }
     paintSurfaceOrWhole(toothNumber, target);
+    setAnnouncement(`${conditionDef.label} charted on ${place}`);
   }
 
   function handleToothNumberClick(toothNumber: number) {
@@ -273,6 +289,24 @@ export function Odontogram({
     applyTool(toothNumber, surface);
   }
 
+  function navigateTeeth(from: number, direction: ToothNavigation) {
+    const upperIndex = UPPER_ARCH.indexOf(from);
+    const inUpper = upperIndex !== -1;
+    const column = inUpper ? upperIndex : LOWER_ARCH.indexOf(from);
+    const row = inUpper ? UPPER_ARCH : LOWER_ARCH;
+    const other = inUpper ? LOWER_ARCH : UPPER_ARCH;
+
+    let target = from;
+    if (direction === "left") target = row[Math.max(0, column - 1)];
+    else if (direction === "right") target = row[Math.min(row.length - 1, column + 1)];
+    else if (direction === "first") target = row[0];
+    else if (direction === "last") target = row[row.length - 1];
+    else target = other[column]; // up/down: same column, other arch
+
+    setActiveTooth(target);
+    gridRef.current?.querySelector<HTMLElement>(`[data-tooth-button="${target}"]`)?.focus();
+  }
+
   const renderTooth = (toothNumber: number) => {
     const display = resolveToothDisplay(toothNumber, view, chartState, overlayState, toothToBridge);
 
@@ -287,6 +321,9 @@ export function Odontogram({
         overlays={display.overlays}
         bridge={display.bridge}
         alert={display.alert}
+        tabbable={editable ? toothNumber === activeTooth : undefined}
+        onNavigate={editable ? (direction) => navigateTeeth(toothNumber, direction) : undefined}
+        onToothFocus={() => setActiveTooth(toothNumber)}
         onSurfaceClick={(surface) => handleSurfaceClick(toothNumber, surface)}
         onWholeClick={() => handleToothNumberClick(toothNumber)}
         onOverlayClick={(overlay) => handleOverlayClick(toothNumber, overlay)}
@@ -363,12 +400,20 @@ export function Odontogram({
         </p>
       )}
 
-      <div className="flex flex-col gap-3 overflow-x-auto pb-2">
+      <div ref={gridRef} role="group" aria-label="Teeth" aria-describedby="chart-keyboard-help" className="flex flex-col gap-3 overflow-x-auto pb-2">
         <div className="flex justify-center gap-2">{UPPER_ARCH.map(renderTooth)}</div>
         <div className="flex justify-center gap-2">{LOWER_ARCH.map(renderTooth)}</div>
       </div>
 
       <OverlayKey overlayState={overlayState} view={view} />
+
+      <p id="chart-keyboard-help" className={editable ? "text-xs text-muted-foreground" : "sr-only"}>
+        Keyboard: arrow keys move between teeth · M D F L O chart that surface (B also means facial, I incisal) ·
+        Enter charts the whole tooth · 1-6 pick a tool · E erases
+      </p>
+      <p role="status" aria-live="polite" className="sr-only">
+        {announcement}
+      </p>
 
       <p className="text-xs text-muted-foreground">
         Showing <span className="font-medium text-foreground">{view === "existing" ? "existing conditions" : "proposed treatment"}</span> only
