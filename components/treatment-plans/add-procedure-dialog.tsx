@@ -196,13 +196,13 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
             </button>
           ) : (
             <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by code or name"
-                className="pl-8"
+                className="pl-10"
               />
             </div>
           )}
@@ -337,7 +337,7 @@ export function AddProcedureDialog({ procedures, onAddKanban, onAddManual }: Add
               </div>
             )}
 
-            <Button onClick={submit} disabled={!canSubmit}>
+            <Button onClick={submit} disabled={!canSubmit} className="h-11 rounded-full bg-navy text-navy-foreground hover:bg-navy/90">
               Add to plan
             </Button>
           </div>

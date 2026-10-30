@@ -206,3 +206,23 @@
   backdrop-filter: blur(24px) saturate(1.4);
   border-radius: 1.75rem;
 }
+
+/* Form fields inside dialogs: pill inputs on the frosted surface. */
+[data-slot="dialog-content"] [data-slot="input"] {
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: color-mix(in oklch, white 85%, transparent);
+}
+/* Inputs that reserve room for an icon keep their own left padding. */
+[data-slot="dialog-content"] [data-slot="input"]:not([class*="pl-"]) {
+  padding-inline: 1rem;
+}
+[data-slot="dialog-content"] [data-slot="textarea"] {
+  border-radius: 1rem;
+  padding: 0.625rem 1rem;
+  background-color: color-mix(in oklch, white 85%, transparent);
+}
+.dark [data-slot="dialog-content"] [data-slot="input"],
+.dark [data-slot="dialog-content"] [data-slot="textarea"] {
+  background-color: oklch(1 0 0 / 0.05);
+}

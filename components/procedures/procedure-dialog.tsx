@@ -100,7 +100,7 @@ export function ProcedureDialog({ procedure, trigger }: ProcedureDialogProps) {
               Requires a tooth number
             </Label>
           </div>
-          <Button type="submit" className="mt-2">
+          <Button type="submit" className="mt-2 h-11 rounded-full bg-navy text-navy-foreground hover:bg-navy/90">
             {isEdit ? "Save changes" : "Create procedure"}
           </Button>
         </form>

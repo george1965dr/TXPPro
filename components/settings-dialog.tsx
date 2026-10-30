@@ -65,7 +65,7 @@ export function SettingsDialog({
               placeholder="Papastergiou Dental"
             />
             <p className="text-xs text-muted-foreground">
-              Shown in the sticky header. Leave blank to just show &quot;TXP Pro&quot;.
+              Shown in the header and as the large name behind each page. Leave blank to just show &quot;TXP Pro&quot;.
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -81,7 +81,7 @@ export function SettingsDialog({
               Printed on the treatment plan letterhead.
             </p>
           </div>
-          <Button type="submit">Save</Button>
+          <Button type="submit" className="h-11 rounded-full bg-navy text-navy-foreground hover:bg-navy/90">Save</Button>
         </form>
         <Link
           href="/procedures"

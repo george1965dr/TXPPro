@@ -42,7 +42,7 @@ export function NewPatientDialog() {
             <Label htmlFor="email">Email (optional)</Label>
             <Input id="email" name="email" type="email" />
           </div>
-          <Button type="submit" className="mt-2">
+          <Button type="submit" className="mt-2 h-11 rounded-full bg-navy text-navy-foreground hover:bg-navy/90">
             Create patient
           </Button>
         </form>

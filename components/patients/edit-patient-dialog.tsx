@@ -56,7 +56,7 @@ export function EditPatientDialog({ patient }: { patient: Patient }) {
             <Label htmlFor="edit-email">Email (optional)</Label>
             <Input id="edit-email" name="email" type="email" defaultValue={patient.email ?? ""} />
           </div>
-          <Button type="submit" className="mt-2">
+          <Button type="submit" className="mt-2 h-11 rounded-full bg-navy text-navy-foreground hover:bg-navy/90">
             Save changes
           </Button>
         </form>
