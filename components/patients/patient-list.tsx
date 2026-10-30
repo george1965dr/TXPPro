@@ -6,15 +6,47 @@ import { Search } from "lucide-react";
 import { restorePatient } from "@/app/actions/patients";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { Patient } from "@/lib/types";
 
+export type PlanState = "none" | "needs-scheduling" | "ready" | "accepted";
+
+export interface PatientPlanInfo {
+  state: PlanState;
+  /** What the printed plan's Total would read: fees minus adjustment. */
+  total: number;
+  /** Procedures not yet placed into a visit. */
+  unscheduled: number;
+}
+
 interface PatientListProps {
   patients: Patient[];
-  acceptedPatientIds: string[];
-  totalPlans: number;
-  acceptedPlans: number;
+  /** Keyed by patient id; a patient with no entry has no active plan. */
+  planInfo: Record<string, PatientPlanInfo>;
 }
+
+type Filter = "all" | PlanState | "archived";
+
+const NO_PLAN: PatientPlanInfo = { state: "none", total: 0, unscheduled: 0 };
+
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: "all", label: "All patients" },
+  { key: "needs-scheduling", label: "Needs scheduling" },
+  { key: "ready", label: "Ready to review" },
+  { key: "accepted", label: "Accepted" },
+  { key: "none", label: "No plan yet" },
+  { key: "archived", label: "Archived" },
+];
+
+const EMPTY_TEXT: Record<Filter, string> = {
+  all: "No patients match your search.",
+  "needs-scheduling": "Nothing is waiting to be scheduled.",
+  ready: "No plan is waiting for review.",
+  accepted: "No accepted plans yet.",
+  none: "Every patient has a plan started.",
+  archived: "No archived patients.",
+};
 
 const tile =
   "flex items-center gap-4 rounded-2xl border border-foreground/[0.06] bg-white/80 p-4 shadow-[0_1px_2px_oklch(0.35_0.08_262/0.08),0_6px_16px_-8px_oklch(0.35_0.08_262/0.14)] dark:border-white/10 dark:bg-white/5 dark:shadow-none";
@@ -53,68 +85,93 @@ function Orb() {
   );
 }
 
-export function PatientList({ patients, acceptedPatientIds, totalPlans, acceptedPlans }: PatientListProps) {
-  const [query, setQuery] = useState("");
-  const [showArchived, setShowArchived] = useState(false);
+function PlanStatus({ info, added }: { info: PatientPlanInfo; added: string }) {
+  if (info.state === "none") {
+    return (
+      <>
+        <span className="text-muted-foreground">No plan yet</span>
+        <span className="hidden text-muted-foreground sm:inline">Added {added}</span>
+      </>
+    );
+  }
 
-  const acceptedIds = useMemo(() => new Set(acceptedPatientIds), [acceptedPatientIds]);
-  const archivedCount = useMemo(() => patients.filter((p) => p.archived_at).length, [patients]);
-  const activeCount = patients.length - archivedCount;
+  return (
+    <>
+      {info.state === "accepted" ? (
+        <span className="flex items-center gap-2 font-medium text-success">
+          <Orb />
+          Accepted
+        </span>
+      ) : info.state === "ready" ? (
+        <span className="font-medium">Ready to review</span>
+      ) : (
+        <span className="font-medium">{info.unscheduled} to schedule</span>
+      )}
+      <span className="text-muted-foreground tabular-nums">{formatMoney(info.total)}</span>
+    </>
+  );
+}
+
+export function PatientList({ patients, planInfo }: PatientListProps) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
+
+  const infoFor = (patient: Patient) => planInfo[patient.id] ?? NO_PLAN;
+
+  const counts = useMemo(() => {
+    const result: Record<Filter, number> = {
+      all: 0,
+      "needs-scheduling": 0,
+      ready: 0,
+      accepted: 0,
+      none: 0,
+      archived: 0,
+    };
+    for (const patient of patients) {
+      if (patient.archived_at) {
+        result.archived++;
+        continue;
+      }
+      result.all++;
+      result[(planInfo[patient.id] ?? NO_PLAN).state]++;
+    }
+    return result;
+  }, [patients, planInfo]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return patients.filter((p) => {
-      if (showArchived ? !p.archived_at : p.archived_at) return false;
+      if (filter === "archived" ? !p.archived_at : p.archived_at) return false;
+      if (filter !== "all" && filter !== "archived" && (planInfo[p.id] ?? NO_PLAN).state !== filter) return false;
       if (!q) return true;
       return p.name.toLowerCase().includes(q) || (p.email ?? "").toLowerCase().includes(q);
     });
-  }, [patients, query, showArchived]);
-
-  const views = [
-    { archived: false, label: "Active patients", count: activeCount },
-    { archived: true, label: "Archived", count: archivedCount },
-  ];
+  }, [patients, planInfo, query, filter]);
 
   return (
     <div className="grid items-start gap-5 lg:grid-cols-[18rem_1fr]">
-      <aside className="panel flex flex-col gap-6 p-6">
+      <aside className="panel flex flex-col gap-5 p-6">
         <div>
-          <h2 className="text-lg font-medium">Overview</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Treatment plans across the practice</p>
+          <h2 className="text-lg font-medium">Show</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Where each patient&apos;s plan stands</p>
         </div>
 
-        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-          <div className={cn(tile, "flex-col items-start gap-1 p-4")}>
-            <dt className="text-sm text-muted-foreground">Total plans</dt>
-            <dd className="text-4xl font-light tabular-nums">{totalPlans}</dd>
-          </div>
-          <div className={cn(tile, "flex-col items-start gap-1 p-4")}>
-            <dt className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Orb />
-              Accepted
-            </dt>
-            <dd className="text-4xl font-light tabular-nums">{acceptedPlans}</dd>
-          </div>
-        </dl>
-
-        <div role="group" aria-label="Which patients to show" className="flex flex-col gap-1.5">
-          {views.map((view) => {
-            const selected = showArchived === view.archived;
+        <div role="group" aria-label="Filter patients by plan status" className="flex flex-col gap-1.5 max-lg:flex-row max-lg:flex-wrap">
+          {FILTERS.map(({ key, label }) => {
+            const selected = filter === key;
             return (
               <button
-                key={view.label}
+                key={key}
                 type="button"
                 aria-pressed={selected}
-                onClick={() => setShowArchived(view.archived)}
+                onClick={() => setFilter(key)}
                 className={cn(
-                  "flex items-center justify-between rounded-full px-4 py-2.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                  selected
-                    ? "bg-navy font-medium text-navy-foreground"
-                    : "text-foreground hover:bg-foreground/10",
+                  "flex items-center justify-between rounded-full px-4 py-2.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring max-lg:gap-2 max-lg:py-2",
+                  selected ? "bg-navy font-medium text-navy-foreground" : "text-foreground hover:bg-foreground/10",
                 )}
               >
-                {view.label}
-                <span className="tabular-nums">{view.count}</span>
+                {label}
+                <span className="tabular-nums">{counts[key]}</span>
               </button>
             );
           })}
@@ -142,7 +199,7 @@ export function PatientList({ patients, acceptedPatientIds, totalPlans, accepted
           </p>
         ) : filtered.length === 0 ? (
           <p className="py-10 text-center text-muted-foreground">
-            {showArchived ? "No archived patients." : "No patients match your search."}
+            {query.trim() ? "No patients match your search." : EMPTY_TEXT[filter]}
           </p>
         ) : (
           <ul className="flex flex-col gap-2.5">
@@ -150,7 +207,7 @@ export function PatientList({ patients, acceptedPatientIds, totalPlans, accepted
               const born = `Born ${new Date(patient.birth_date).toLocaleDateString()}${
                 patient.email ? ` · ${patient.email}` : ""
               }`;
-              const added = `Added ${new Date(patient.created_at).toLocaleDateString()}`;
+              const added = new Date(patient.created_at).toLocaleDateString();
 
               if (patient.archived_at) {
                 return (
@@ -163,7 +220,7 @@ export function PatientList({ patients, acceptedPatientIds, totalPlans, accepted
                       </div>
                       <p className="truncate text-sm text-muted-foreground">{born}</p>
                     </div>
-                    <p className="hidden text-sm text-muted-foreground sm:block">{added}</p>
+                    <p className="hidden text-sm text-muted-foreground sm:block">Added {added}</p>
                     <Button variant="outline" size="sm" className="h-8 rounded-full px-3" asChild>
                       <Link href={`/patients/${patient.id}`}>View</Link>
                     </Button>
@@ -191,13 +248,7 @@ export function PatientList({ patients, acceptedPatientIds, totalPlans, accepted
                       <p className="truncate text-sm text-muted-foreground">{born}</p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1 text-sm">
-                      {acceptedIds.has(patient.id) && (
-                        <span className="flex items-center gap-2 font-medium text-success">
-                          <Orb />
-                          Accepted
-                        </span>
-                      )}
-                      <span className="hidden text-muted-foreground sm:inline">{added}</span>
+                      <PlanStatus info={infoFor(patient)} added={added} />
                     </div>
                   </Link>
                 </li>
