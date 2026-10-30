@@ -7,6 +7,7 @@ import { buildPresentSummary, type PresentVisit } from "@/components/treatment-p
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check } from "lucide-react";
 import { formatMoney } from "@/lib/money";
+import { formatTimestamp } from "@/lib/dates";
 import type {
   Patient,
   PracticeSettings,
@@ -104,7 +105,7 @@ export default async function PresentPlanPage({
   const hasUnscheduled = (summary?.unscheduled.items.length ?? 0) > 0;
 
   return (
-    <div className="mx-auto my-6 flex w-full max-w-2xl flex-col gap-7 rounded-3xl bg-white p-10 text-foreground [--foreground:oklch(0.145_0_0)] [--muted-foreground:oklch(0.4_0_0)] [--border:oklch(0.85_0_0)] [--background:oklch(1_0_0)] [--success:oklch(0.5_0.14_150)] [--success-foreground:oklch(0.99_0_0)] [--input:oklch(0.9_0_0)] [--muted:oklch(0.97_0_0)] shadow-[0_18px_48px_-18px_oklch(0.4_0.09_262/0.3)] print:my-0 print:max-w-none print:rounded-none print:p-0 print:shadow-none">
+    <div className="mx-auto my-6 flex w-full max-w-2xl flex-col gap-7 rounded-3xl bg-white p-6 sm:p-10 text-foreground [--foreground:oklch(0.145_0_0)] [--muted-foreground:oklch(0.4_0_0)] [--border:oklch(0.85_0_0)] [--background:oklch(1_0_0)] [--success:oklch(0.5_0.14_150)] [--success-foreground:oklch(0.99_0_0)] [--input:oklch(0.9_0_0)] [--muted:oklch(0.97_0_0)] shadow-[0_18px_48px_-18px_oklch(0.4_0.09_262/0.3)] print:my-0 print:max-w-none print:rounded-none print:p-0 print:shadow-none">
       <header className="border-b-2 border-foreground pb-4">
         <p className="text-2xl font-semibold tracking-tight">{practiceSettings?.name || "Treatment plan"}</p>
         {practiceSettings?.address && (
@@ -112,7 +113,7 @@ export default async function PresentPlanPage({
         )}
       </header>
 
-      <div className="flex items-center justify-between print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <Button variant="outline" size="sm" asChild>
           <Link href={backHref}>
             <ArrowLeft className="size-4" />
@@ -135,11 +136,11 @@ export default async function PresentPlanPage({
           <p className="mt-1 text-lg">{typedPatient.name}</p>
         </div>
         <div className="text-right text-sm text-muted-foreground">
-          {activePlan && <p>Prepared {new Date(activePlan.created_at).toLocaleDateString()}</p>}
+          {activePlan && <p>Prepared {formatTimestamp(activePlan.created_at)}</p>}
           {activePlan?.accepted_at && (
             <p className="mt-0.5 flex items-center justify-end gap-1.5 font-medium text-success">
               <Check className="size-4" aria-hidden />
-              Accepted {new Date(activePlan.accepted_at).toLocaleDateString()}
+              Accepted {formatTimestamp(activePlan.accepted_at)}
             </p>
           )}
         </div>

@@ -7,6 +7,7 @@ import { restorePatient } from "@/app/actions/patients";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/money";
+import { formatDateOnly, formatTimestamp } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { Patient } from "@/lib/types";
 
@@ -204,10 +205,10 @@ export function PatientList({ patients, planInfo }: PatientListProps) {
         ) : (
           <ul className="flex flex-col gap-2.5">
             {filtered.map((patient) => {
-              const born = `Born ${new Date(patient.birth_date).toLocaleDateString()}${
+              const born = `Born ${formatDateOnly(patient.birth_date)}${
                 patient.email ? ` · ${patient.email}` : ""
               }`;
-              const added = new Date(patient.created_at).toLocaleDateString();
+              const added = formatTimestamp(patient.created_at);
 
               if (patient.archived_at) {
                 return (

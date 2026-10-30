@@ -65,7 +65,7 @@ export function VisitBoard({
           ))}
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           Drag a procedure into a visit, or use its visit menu · click a card&apos;s fee to adjust it
         </p>
@@ -77,31 +77,33 @@ export function VisitBoard({
         </div>
       </div>
 
-      <div
-        className="grid gap-3"
-        style={{ gridTemplateColumns: `repeat(${visitNumbers.length + 1}, minmax(140px, 1fr))` }}
-      >
-        <VisitColumn
-          label="Unscheduled"
-          items={items.filter((item) => item.appointmentNumber === null)}
-          visitCount={visitCount}
-          onDropItem={(itemId) => onMove(itemId, null)}
-          onMoveItem={onMove}
-          onRemoveItem={onRemove}
-          onFeeChange={onFeeChange}
-        />
-        {visitNumbers.map((n) => (
+      <div className="overflow-x-auto pb-1">
+        <div
+          className="grid gap-3"
+          style={{ gridTemplateColumns: `repeat(${visitNumbers.length + 1}, minmax(140px, 1fr))` }}
+        >
           <VisitColumn
-            key={n}
-            label={`Visit ${n}`}
-            items={items.filter((item) => item.appointmentNumber === n)}
+            label="Unscheduled"
+            items={items.filter((item) => item.appointmentNumber === null)}
             visitCount={visitCount}
-            onDropItem={(itemId) => onMove(itemId, n)}
+            onDropItem={(itemId) => onMove(itemId, null)}
             onMoveItem={onMove}
             onRemoveItem={onRemove}
             onFeeChange={onFeeChange}
           />
-        ))}
+          {visitNumbers.map((n) => (
+            <VisitColumn
+              key={n}
+              label={`Visit ${n}`}
+              items={items.filter((item) => item.appointmentNumber === n)}
+              visitCount={visitCount}
+              onDropItem={(itemId) => onMove(itemId, n)}
+              onMoveItem={onMove}
+              onRemoveItem={onRemove}
+              onFeeChange={onFeeChange}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex items-center justify-between border-t pt-3">

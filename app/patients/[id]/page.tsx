@@ -9,6 +9,7 @@ import { restorePatient } from "@/app/actions/patients";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { formatDateOnly } from "@/lib/dates";
 import type {
   Bridge,
   BridgeTooth,
@@ -123,7 +124,7 @@ export default async function PatientWorkspacePage({
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-8 pt-6 pb-12">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link
           href="/patients"
           aria-label="Back to patients"
@@ -132,13 +133,13 @@ export default async function PatientWorkspacePage({
         >
           <ArrowLeft className="size-4" />
         </Link>
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-4xl font-light tracking-tight">{typedPatient.name}</h1>
+            <h1 className="text-3xl font-light tracking-tight break-words sm:text-4xl">{typedPatient.name}</h1>
             {typedPatient.archived_at && <Badge variant="secondary">Archived</Badge>}
           </div>
           <p className="text-sm text-foreground/75">
-            Born {new Date(typedPatient.birth_date).toLocaleDateString()}
+            Born {formatDateOnly(typedPatient.birth_date)}
           </p>
         </div>
         <div className="flex items-center gap-2">

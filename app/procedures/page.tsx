@@ -9,7 +9,7 @@ export default async function ProceduresPage() {
   const procedures = (data ?? []) as Procedure[];
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-8 pt-6 pb-12">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-8 pt-6 pb-12">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-light tracking-tight">Procedures</h1>

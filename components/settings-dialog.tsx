@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Settings } from "lucide-react";
 import { updatePracticeSettings } from "@/app/actions/settings";
 import { Button } from "@/components/ui/button";
@@ -83,13 +82,6 @@ export function SettingsDialog({
           </div>
           <Button type="submit" className="h-11 rounded-full bg-navy text-navy-foreground hover:bg-navy/90">Save</Button>
         </form>
-        <Link
-          href="/procedures"
-          onClick={() => setOpen(false)}
-          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Manage procedure codes →
-        </Link>
       </DialogContent>
     </Dialog>
   );

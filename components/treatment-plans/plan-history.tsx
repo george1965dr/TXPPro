@@ -4,10 +4,11 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatTimestamp } from "@/lib/dates";
 import type { TreatmentPlan } from "@/lib/types";
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString();
+  return formatTimestamp(value);
 }
 
 function PlanRow({ plan }: { plan: TreatmentPlan }) {

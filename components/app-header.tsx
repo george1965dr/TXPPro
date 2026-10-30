@@ -19,12 +19,12 @@ export function AppHeader({ practiceName }: AppHeaderProps) {
 
   return (
     <header className="sticky top-0 z-10 bg-background/40 backdrop-blur-xl md:-ml-24 md:pl-24 print:hidden">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-8">
-        <div className="flex items-center gap-4">
-          <Link href="/patients" className="flex items-baseline gap-2">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-8">
+        <div className="flex min-w-0 items-center gap-4">
+          <Link href="/patients" className="flex min-w-0 items-baseline gap-2">
             {practiceName ? (
               <>
-                <span className="text-sm font-medium tracking-tight">{practiceName}</span>
+                <span className="truncate text-sm font-medium tracking-tight">{practiceName}</span>
                 <span className="text-sm font-medium text-foreground/70">
                   TXP <span className="text-primary">Pro</span>
                 </span>
@@ -36,7 +36,7 @@ export function AppHeader({ practiceName }: AppHeaderProps) {
             )}
           </Link>
           {info && (
-            <div className="flex items-center gap-1.5 text-sm">
+            <div className="hidden items-center gap-1.5 text-sm sm:flex">
               <span className="text-foreground/60">/</span>
               <span className="font-medium">{info.patientName}</span>
               <span className="text-foreground/60">/</span>
