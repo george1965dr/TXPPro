@@ -35,7 +35,7 @@ function PlanRow({ plan }: { plan: TreatmentPlan }) {
           </span>
           <Badge
             variant={plan.accepted_at ? "default" : "outline"}
-            className={plan.accepted_at ? "bg-green-600 text-white dark:bg-green-500" : undefined}
+            className={plan.accepted_at ? "bg-success text-success-foreground" : undefined}
           >
             {plan.accepted_at ? "Accepted" : "Not accepted"}
           </Badge>

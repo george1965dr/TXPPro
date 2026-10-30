@@ -181,7 +181,7 @@ export function PerioArchTable({
                   className={cn(
                     "border-b px-1 py-1 text-center text-sm",
                     severity === "significant" && "font-medium text-red-600 dark:text-red-400",
-                    severity === "watch" && "font-medium text-amber-600 dark:text-amber-400",
+                    severity === "watch" && "font-medium text-amber-700 dark:text-amber-400",
                   )}
                 >
                   {cal}

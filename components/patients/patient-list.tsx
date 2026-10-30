@@ -101,7 +101,7 @@ export function PatientList({ patients, acceptedPatientIds }: PatientListProps) 
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{patient.name}</p>
                         {acceptedIds.has(patient.id) && (
-                          <Badge className="bg-green-600 text-white dark:bg-green-500">Accepted</Badge>
+                          <Badge className="bg-success text-success-foreground">Accepted</Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">

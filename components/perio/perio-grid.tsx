@@ -94,7 +94,7 @@ export function PerioGrid({ patientId, initialMeasurements, initialStatuses }: P
             {deepSites} site{deepSites === 1 ? "" : "s"} ≥ 4mm · {bleedingSites} bleeding on probing
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-sm text-green-700 dark:text-green-400">
+          <div className="flex items-center gap-1.5 text-sm text-success">
             <Check className="size-3.5" />
             All sites within normal limits
           </div>

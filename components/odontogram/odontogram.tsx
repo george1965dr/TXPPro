@@ -54,7 +54,7 @@ export function Odontogram({
   // picture of what's been authored on the kanban (see WorkspaceTabs).
   const [view, setView] = useState<ChartLayer>("existing");
   const [condition, setCondition] = useState<ConditionId>("filling");
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const { track } = useSaveTracker();
   const editable = view === "existing";
 
@@ -298,7 +298,6 @@ export function Odontogram({
       <ConditionPalette
         view={view}
         onViewChange={setView}
-        isSaving={isPending}
         condition={condition}
         onConditionChange={selectCondition}
       />

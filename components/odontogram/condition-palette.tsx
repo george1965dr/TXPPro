@@ -13,7 +13,6 @@ import type { ChartLayer } from "@/lib/types";
 interface ConditionPaletteProps {
   view: ChartLayer;
   onViewChange: (view: ChartLayer) => void;
-  isSaving: boolean;
   condition: ConditionId;
   onConditionChange: (condition: ConditionId) => void;
 }
@@ -22,8 +21,8 @@ const SELECTABLE_CONDITIONS = CONDITIONS.filter((c) => c.group !== null && !c.pr
 const ERASE = CONDITIONS.find((c) => c.id === "erase")!;
 
 /**
- * The odontogram's control bar: the Existing/Proposed view toggle and save
- * indicator are always shown (switching back to Existing from a read-only
+ * The odontogram's control bar: the Existing/Proposed view toggle is always
+ * shown (switching back to Existing from a read-only
  * Proposed view has to stay reachable); the erase button and condition
  * grid only apply to Existing, since proposed treatment is authored on the
  * kanban now (see add-procedure-dialog.tsx), which draws its own graphic.
@@ -31,7 +30,6 @@ const ERASE = CONDITIONS.find((c) => c.id === "erase")!;
 export function ConditionPalette({
   view,
   onViewChange,
-  isSaving,
   condition,
   onConditionChange,
 }: ConditionPaletteProps) {
@@ -78,22 +76,13 @@ export function ConditionPalette({
               className={cn(
                 "px-3 py-1.5 text-sm",
                 view === "proposed"
-                  ? "bg-success text-white"
+                  ? "bg-proposed text-proposed-foreground"
                   : "bg-transparent text-muted-foreground hover:bg-accent",
               )}
             >
               Proposed
             </button>
           </div>
-          <span
-            role="status"
-            aria-label={isSaving ? "Saving" : "Saved"}
-            title={isSaving ? "Saving…" : "Saved"}
-            className={cn(
-              "size-2.5 rounded-full transition-colors",
-              isSaving ? "bg-muted-foreground/30" : "bg-green-500",
-            )}
-          />
         </div>
       </div>
 

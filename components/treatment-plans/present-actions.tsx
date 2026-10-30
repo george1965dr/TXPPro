@@ -38,7 +38,7 @@ export function PresentActions({ patientId, treatmentPlanId, accepted, hasUnsche
         ) : (
           <Button
             size="sm"
-            className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+            className="bg-success text-success-foreground hover:bg-success/90"
             disabled={isPending || hasUnscheduled}
             onClick={() => startTransition(async () => { await track("Accept plan", () => setPlanAccepted(patientId, treatmentPlanId, true)); })}
           >

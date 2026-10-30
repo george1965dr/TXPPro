@@ -126,7 +126,7 @@ export default async function PresentPlanPage({
           {typedPatient.name} · {new Date().toLocaleDateString()}
         </p>
         {activePlan?.accepted_at && (
-          <p className="mt-1 text-sm text-green-700 dark:text-green-400">
+          <p className="mt-1 text-sm text-success">
             Accepted {new Date(activePlan.accepted_at).toLocaleDateString()}
           </p>
         )}

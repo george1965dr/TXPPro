@@ -32,16 +32,22 @@ interface ToothSurfaceDiagramProps {
 
 // Tied to theme tokens (not hardcoded hex) so the active view's color
 // adapts automatically between light and dark mode.
+//
+// Letters sit on a 15% tint of their own color, so `text` is the token
+// pulled toward the foreground: that keeps tiny labels above 4.5:1 in both
+// themes, which the bare token (3.9-4.5:1 in light) does not.
+const legible = (token: string) => `color-mix(in oklch, var(${token}) 80%, var(--foreground))`;
+
 const VIEW_COLOR = {
   existing: {
     fill: "color-mix(in oklch, var(--primary) 15%, var(--background))",
     stroke: "var(--primary)",
-    text: "var(--primary)",
+    text: legible("--primary"),
   },
   proposed: {
-    fill: "color-mix(in oklch, var(--success) 15%, var(--background))",
-    stroke: "var(--success)",
-    text: "var(--success)",
+    fill: "color-mix(in oklch, var(--proposed) 15%, var(--background))",
+    stroke: "var(--proposed)",
+    text: legible("--proposed"),
   },
 } as const;
 
@@ -51,14 +57,14 @@ const EMPTY_COLOR = { fill: "var(--muted)", stroke: "var(--border)", text: "var(
 const ALERT_COLOR = {
   fill: "color-mix(in oklch, var(--destructive) 15%, var(--background))",
   stroke: "var(--destructive)",
-  text: "var(--destructive)",
+  text: legible("--destructive"),
 };
 
 /** Veneers render green regardless of layer/view - visually distinct from every other surface finding. */
 const VENEER_COLOR = {
   fill: "color-mix(in oklch, var(--success) 15%, var(--background))",
   stroke: "var(--success)",
-  text: "var(--success)",
+  text: legible("--success"),
 };
 
 const CONDITION_LETTER: Record<string, string> = {
